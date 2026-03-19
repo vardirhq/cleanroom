@@ -1,0 +1,119 @@
+{
+  "version": "2026.03.17",
+  "packages": [
+    {
+      "package": "com.sta.viruscleaner.antivirus",
+      "score": 10,
+      "category": "fake_security_app",
+      "reason": "Package matches the ESET-listed fake antivirus and cleaner campaign."
+    },
+    {
+      "package": "com.superantivirus.mobilesecurity",
+      "score": 10,
+      "category": "fake_security_app",
+      "reason": "Package matches the ESET-listed fake antivirus and cleaner campaign."
+    },
+    {
+      "package": "com.noah.antivirus",
+      "score": 10,
+      "category": "fake_security_app",
+      "reason": "Package matches the ESET-listed fake antivirus and cleaner campaign."
+    },
+    {
+      "package": "com.xplusapps.antivirus.free",
+      "score": 10,
+      "category": "fake_security_app",
+      "reason": "Package matches the ESET-listed fake antivirus and cleaner campaign."
+    },
+    {
+      "package": "com.gotechgo.antivirus.mobilesecurity2018",
+      "score": 10,
+      "category": "fake_security_app",
+      "reason": "Package matches the ESET-listed fake antivirus and cleaner campaign."
+    },
+    {
+      "package": "com.mobileapp.virus",
+      "score": 10,
+      "category": "fake_security_app",
+      "reason": "Package matches the ESET-listed fake antivirus and cleaner campaign."
+    },
+    {
+      "package": "muel.security.antivirus",
+      "score": 10,
+      "category": "fake_security_app",
+      "reason": "Package matches the ESET-listed fake antivirus and cleaner campaign."
+    },
+    {
+      "package": "com.stranger.maxsecurity",
+      "score": 10,
+      "category": "fake_security_app",
+      "reason": "Package matches the ESET-listed fake antivirus and booster campaign."
+    },
+    {
+      "package": "com.applock.security.viruscleaner",
+      "score": 10,
+      "category": "fake_security_app",
+      "reason": "Package matches the ESET-listed fake antivirus and junk-remover campaign."
+    },
+    {
+      "package": "com.boost.cpu.shootcleaner",
+      "score": 10,
+      "category": "fake_cleaner",
+      "reason": "Package matches the Trend Micro BadBooster campaign."
+    },
+    {
+      "package": "com.boost.superclean.cpucool.lite",
+      "score": 10,
+      "category": "fake_cleaner",
+      "reason": "Package matches the Trend Micro BadBooster campaign."
+    },
+    {
+      "package": "com.booster.supercleaner",
+      "score": 10,
+      "category": "fake_cleaner",
+      "reason": "Package matches the Trend Micro BadBooster campaign."
+    },
+    {
+      "package": "com.party.rocketcleaner",
+      "score": 10,
+      "category": "fake_cleaner",
+      "reason": "Package matches the Trend Micro BadBooster campaign."
+    },
+    {
+      "package": "com.party.rocketcleaner.lite",
+      "score": 10,
+      "category": "fake_cleaner",
+      "reason": "Package matches the Trend Micro BadBooster campaign."
+    },
+    {
+      "package": "com.party.speedclean",
+      "score": 10,
+      "category": "fake_cleaner",
+      "reason": "Package matches the Trend Micro BadBooster campaign."
+    },
+    {
+      "package": "com.volabs.androidcleaner",
+      "score": 10,
+      "category": "fake_cleaner",
+      "reason": "Package matches the Anatsa dropper phone-cleaner campaign."
+    },
+    {
+      "package": "com.appiclouds.phonecleaner",
+      "score": 10,
+      "category": "fake_cleaner",
+      "reason": "Package matches the Anatsa dropper phone-cleaner campaign."
+    },
+    {
+      "package": "com.example.supercleaner",
+      "score": 10,
+      "category": "fake_cleaner",
+      "reason": "Package matches a known-bad signature entry."
+    },
+    {
+      "package": "com.example.simplehome",
+      "score": 10,
+      "category": "fake_launcher",
+      "reason": "Package matches a known-bad fake launcher signature."
+    }
+  ]
+}

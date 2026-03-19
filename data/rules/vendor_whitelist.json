@@ -1,0 +1,23 @@
+{
+  "version": "2026.03.17",
+  "exactPackages": [
+    "com.sec.android.app.launcher",
+    "com.google.android.apps.nexuslauncher",
+    "com.mi.android.globallauncher",
+    "com.motorola.launcher3",
+    "no.dnb.vipps",
+    "com.facebook.katana",
+    "com.arlo.app",
+    "com.xplora.xplorav2"
+  ],
+  "packagePrefixes": [
+    "com.google.android.",
+    "com.google.",
+    "com.samsung.",
+    "com.sec.",
+    "com.facebook.",
+    "no.dnb.",
+    "com.arlo.",
+    "com.xplora."
+  ]
+}

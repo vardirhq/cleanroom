@@ -1,0 +1,117 @@
+{
+  "version": "2026.03.17",
+  "rules": [
+    {
+      "type": "name_keyword",
+      "value": "cleaner",
+      "score": 4,
+      "category": "fake_cleaner",
+      "reason": "Package name matches cleaner-related keywords."
+    },
+    {
+      "type": "name_keyword",
+      "value": "clean",
+      "score": 2,
+      "category": "fake_cleaner",
+      "reason": "Package name contains a cleaning-related stem."
+    },
+    {
+      "type": "name_keyword",
+      "value": "cleanup",
+      "score": 3,
+      "category": "fake_cleaner",
+      "reason": "Package name claims cleanup behavior."
+    },
+    {
+      "type": "name_keyword",
+      "value": "booster",
+      "score": 3,
+      "category": "fake_booster",
+      "reason": "Package name matches booster-related keywords."
+    },
+    {
+      "type": "name_keyword",
+      "value": "optimizer",
+      "score": 3,
+      "category": "fake_optimizer",
+      "reason": "Package name matches optimizer-related keywords."
+    },
+    {
+      "type": "name_keyword",
+      "value": "security",
+      "score": 2,
+      "category": "fake_security_app",
+      "reason": "Package name matches fake-security utility keywords."
+    },
+    {
+      "type": "name_keyword",
+      "value": "antivirus",
+      "score": 4,
+      "category": "fake_security_app",
+      "reason": "Package name claims antivirus behavior."
+    },
+    {
+      "type": "package_keyword",
+      "value": "cleaner",
+      "score": 4,
+      "category": "fake_cleaner",
+      "reason": "Package name matches cleaner-related keywords."
+    },
+    {
+      "type": "package_keyword",
+      "value": "booster",
+      "score": 4,
+      "category": "fake_booster",
+      "reason": "Package name matches booster-related keywords."
+    },
+    {
+      "type": "package_keyword",
+      "value": "optimizer",
+      "score": 4,
+      "category": "fake_optimizer",
+      "reason": "Package name matches optimizer-related keywords."
+    },
+    {
+      "type": "package_keyword",
+      "value": "optimiz",
+      "score": 3,
+      "category": "fake_optimizer",
+      "reason": "Package name contains an optimizer stem."
+    },
+    {
+      "type": "package_keyword",
+      "value": "battery",
+      "score": 2,
+      "category": "fake_optimizer",
+      "reason": "Package name claims battery-improvement behavior."
+    },
+    {
+      "type": "package_keyword",
+      "value": "saver",
+      "score": 2,
+      "category": "fake_optimizer",
+      "reason": "Package name claims battery-saving behavior."
+    },
+    {
+      "type": "package_keyword",
+      "value": "security",
+      "score": 3,
+      "category": "fake_security_app",
+      "reason": "Package name matches fake-security utility keywords."
+    },
+    {
+      "type": "package_keyword",
+      "value": "antivirus",
+      "score": 4,
+      "category": "fake_security_app",
+      "reason": "Package name claims antivirus behavior."
+    },
+    {
+      "type": "package_keyword",
+      "value": "launcher",
+      "score": 3,
+      "category": "fake_launcher",
+      "reason": "Package name suggests launcher or home-screen behavior."
+    }
+  ]
+}
