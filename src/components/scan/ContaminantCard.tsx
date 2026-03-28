@@ -11,7 +11,7 @@ type ContaminantCardProps = {
 
 export function ContaminantCard({ item }: ContaminantCardProps) {
   return (
-    <article className="glass-panel rounded-[28px] p-6">
+    <article className="workbench-panel contaminant-card">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
           <AppIcon iconDataUrl={item.iconDataUrl} name={item.name} />
@@ -31,21 +31,21 @@ export function ContaminantCard({ item }: ContaminantCardProps) {
         <RiskBadge score={item.riskScore} />
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-2">
-        <span className="rounded-full bg-surface-soft px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+      <div className="tag-row">
+        <span className="tag">
           {CATEGORY_LABELS[item.category]}
         </span>
-        <span className="rounded-full bg-surface-soft px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+        <span className="tag">
           {formatRiskLabel(item.riskScore)}
         </span>
+        {item.launcherRisk ? (
+          <span className="tag tag--warning">Launcher risk</span>
+        ) : null}
       </div>
 
-      <ul className="mt-5 grid gap-3 text-sm leading-6 text-text-muted">
+      <ul className="signal-list text-sm leading-6 text-text-muted">
         {item.reasons.map((reason) => (
-          <li
-            key={reason}
-            className="flex items-start gap-3 rounded-[18px] border border-line bg-surface-soft px-3.5 py-3"
-          >
+          <li className="reason-card" key={reason}>
             {item.launcherRisk ? (
               <Home className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
             ) : item.category === "ad_spam_utility" ? (

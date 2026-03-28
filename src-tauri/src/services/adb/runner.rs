@@ -1,4 +1,15 @@
-use std::process::{Child, Command, Stdio};
+use std::{
+    path::{Path, PathBuf},
+    process::{Child, Command, Stdio},
+    sync::OnceLock,
+};
+
+use crate::{
+    models::settings::AdbStrategy,
+    services::settings::load_settings,
+};
+
+static BUNDLED_RESOURCE_DIR: OnceLock<PathBuf> = OnceLock::new();
 
 #[derive(Debug, Clone)]
 pub struct AdbRunner {
@@ -7,14 +18,12 @@ pub struct AdbRunner {
 
 impl AdbRunner {
     pub fn detect() -> Option<Self> {
-        let output = Command::new("adb").arg("version").output().ok()?;
-        if !output.status.success() {
-            return None;
-        }
+        let settings = load_settings();
 
-        Some(Self {
-            adb_path: "adb".to_string(),
-        })
+        match settings.adb_strategy {
+            AdbStrategy::Bundled => Self::detect_bundled().or_else(Self::detect_system),
+            AdbStrategy::System => Self::detect_system().or_else(Self::detect_bundled),
+        }
     }
 
     pub fn adb_path(&self) -> &str {
@@ -74,7 +83,8 @@ impl AdbRunner {
     }
 
     pub fn uninstall_package(&self, serial: &str, package_name: &str) -> std::io::Result<String> {
-        let output = Command::new(&self.adb_path)
+        let mut command = adb_command(&self.adb_path);
+        let output = command
             .args(["-s", serial, "uninstall", package_name])
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
@@ -107,7 +117,7 @@ impl AdbRunner {
     }
 
     pub fn spawn_track_devices(&self) -> std::io::Result<Child> {
-        Command::new(&self.adb_path)
+        adb_command(&self.adb_path)
             .args(["track-devices"])
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
@@ -115,7 +125,8 @@ impl AdbRunner {
     }
 
     fn run(&self, args: &[&str]) -> std::io::Result<String> {
-        let output = Command::new(&self.adb_path)
+        let mut command = adb_command(&self.adb_path);
+        let output = command
             .args(args)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
@@ -133,5 +144,162 @@ impl AdbRunner {
                 stderr
             }))
         }
+    }
+
+    fn detect_bundled() -> Option<Self> {
+        bundled_adb_candidates()
+            .into_iter()
+            .find(|path| is_working_adb_path(path))
+            .map(|path| Self {
+                adb_path: path.to_string_lossy().to_string(),
+            })
+    }
+
+    fn detect_system() -> Option<Self> {
+        is_working_adb_command("adb").then(|| Self {
+            adb_path: "adb".to_string(),
+        })
+    }
+}
+
+pub fn set_bundled_resource_dir(path: Option<PathBuf>) {
+    if let Some(path) = path {
+        let _ = BUNDLED_RESOURCE_DIR.set(path);
+    }
+}
+
+fn bundled_adb_candidates() -> Vec<PathBuf> {
+    let mut candidates = Vec::new();
+
+    if let Some(path) = BUNDLED_RESOURCE_DIR.get() {
+        candidates.push(path.join(platform_tools_subdir()).join(adb_binary_name()));
+    }
+
+    if let Some(path) = std::env::var_os("CLEANROOM_RESOURCE_DIR") {
+        candidates.push(
+            PathBuf::from(path)
+                .join("platform-tools")
+                .join(platform_tools_subdir())
+                .join(adb_binary_name()),
+        );
+    }
+
+    candidates.push(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("resources")
+            .join(platform_tools_subdir())
+            .join(adb_binary_name()),
+    );
+
+    if let Ok(executable) = std::env::current_exe() {
+        if let Some(directory) = executable.parent() {
+            candidates.push(
+                directory
+                    .join("resources")
+                    .join(platform_tools_subdir())
+                    .join(adb_binary_name()),
+            );
+            candidates.push(
+                directory
+                    .join("platform-tools")
+                    .join(platform_tools_subdir())
+                    .join(adb_binary_name()),
+            );
+        }
+    }
+
+    dedupe_paths(candidates)
+}
+
+fn dedupe_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
+    let mut unique = Vec::new();
+
+    for path in paths {
+        if !unique.iter().any(|existing| existing == &path) {
+            unique.push(path);
+        }
+    }
+
+    unique
+}
+
+fn is_working_adb_path(path: &Path) -> bool {
+    if !path.exists() {
+        return false;
+    }
+
+    #[cfg(unix)]
+    {
+        ensure_executable(path);
+    }
+
+    is_working_adb_command(path)
+}
+
+#[cfg(unix)]
+fn ensure_executable(path: &Path) {
+    use std::os::unix::fs::PermissionsExt;
+
+    if let Ok(metadata) = std::fs::metadata(path) {
+        let mode = metadata.permissions().mode();
+        if mode & 0o111 == 0 {
+            let mut permissions = metadata.permissions();
+            permissions.set_mode(mode | 0o755);
+            let _ = std::fs::set_permissions(path, permissions);
+        }
+    }
+}
+
+fn is_working_adb_command(command_path: impl AsRef<Path>) -> bool {
+    adb_command(command_path)
+        .arg("version")
+        .output()
+        .ok()
+        .is_some_and(|output| output.status.success())
+}
+
+fn adb_command(command_path: impl AsRef<Path>) -> Command {
+    let mut command = Command::new(command_path.as_ref());
+    configure_adb_process(&mut command);
+    command
+}
+
+#[cfg(target_os = "windows")]
+fn configure_adb_process(command: &mut Command) {
+    use std::os::windows::process::CommandExt;
+
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    command.creation_flags(CREATE_NO_WINDOW);
+}
+
+#[cfg(not(target_os = "windows"))]
+fn configure_adb_process(_command: &mut Command) {}
+
+fn platform_tools_subdir() -> &'static str {
+    #[cfg(target_os = "windows")]
+    {
+        "windows"
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        "linux"
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        "macos"
+    }
+}
+
+fn adb_binary_name() -> &'static str {
+    #[cfg(target_os = "windows")]
+    {
+        "adb.exe"
+    }
+
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    {
+        "adb"
     }
 }

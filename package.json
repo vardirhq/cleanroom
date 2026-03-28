@@ -1,11 +1,28 @@
 {
+  "main": "electron-dist/main.js",
   "name": "cleanroom",
+  "author": "Madsen",
+  "description": "Android junk-app remediation workbench for support desks.",
+  "productName": "Cleanroom",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "build": "tsc && vite build",
+    "build:electron": "pnpm build && pnpm build:electron:main && pnpm build:electron:sidecar",
+    "build:electron:assets": "node ./scripts/stage-electron-assets.mjs",
+    "build:electron:assets:win": "node ./scripts/stage-electron-assets.mjs win",
+    "build:electron:icons": "bash ./scripts/prepare-electron-icons.sh",
+    "build:electron:main": "tsc -p electron/tsconfig.json",
+    "build:electron:sidecar": "cargo build --manifest-path src-tauri/Cargo.toml --bin cleanroom-sidecar",
+    "build:electron:sidecar:release": "cargo build --manifest-path src-tauri/Cargo.toml --release --bin cleanroom-sidecar",
+    "build:electron:sidecar:release:win": "cargo build --manifest-path src-tauri/Cargo.toml --release --target x86_64-pc-windows-gnu --bin cleanroom-sidecar",
+    "build:windows:installer": "bash ./scripts/build-windows-installer.sh",
+    "build:windows:portable": "pnpm tauri build --target x86_64-pc-windows-gnu --no-bundle --ci",
     "dev": "vite",
+    "dist:electron:linux": "pnpm build && pnpm build:electron:main && pnpm build:electron:sidecar:release && pnpm build:electron:assets && cross-env NODE_NO_WARNINGS=1 electron-builder --linux",
+    "dist:electron:win": "pnpm build && pnpm build:electron:main && pnpm build:electron:sidecar:release:win && pnpm build:electron:assets:win && cross-env NODE_NO_WARNINGS=1 electron-builder --win portable nsis",
+    "electron:dev": "pnpm build:electron:sidecar && pnpm build:electron:main && concurrently -k -n renderer,electron \"pnpm dev --host 127.0.0.1 --port 1420\" \"wait-on http://127.0.0.1:1420 file:electron-dist/main.js && cross-env ELECTRON_RENDERER_URL=http://127.0.0.1:1420 electron electron-dist/main.js\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
@@ -17,34 +34,90 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "@tauri-apps/api": "^2.10.1",
-    "@tauri-apps/plugin-opener": "^2.5.3",
-    "lucide-react": "^0.577.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.1",
-    "zustand": "^5.0.12"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.2.1",
+    "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/cli": "^2.10.1",
+    "@tauri-apps/plugin-opener": "^2.5.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@types/node": "^24.5.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.7.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^37.4.0",
+    "electron-builder": "^26.0.12",
     "eslint": "^10.0.3",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
     "jsdom": "^29.0.0",
+    "lucide-react": "^0.577.0",
     "prettier": "^3.8.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.1",
     "tailwindcss": "^4.2.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.57.1",
     "vite": "^7.3.1",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "wait-on": "^8.0.5",
+    "zustand": "^5.0.12"
+  },
+  "build": {
+    "appId": "dev.madsens.cleanroom",
+    "artifactName": "Cleanroom-${version}-${os}-${arch}.${ext}",
+    "asar": false,
+    "executableName": "Cleanroom",
+    "directories": {
+      "buildResources": "packaging/electron",
+      "output": "electron-release"
+    },
+    "extraResources": [
+      {
+        "from": "electron-resources/resources",
+        "to": "resources"
+      },
+      {
+        "from": "electron-resources/sidecar",
+        "to": "sidecar"
+      },
+      {
+        "from": "electron-resources/icons",
+        "to": "icons"
+      }
+    ],
+    "files": [
+      "dist/**",
+      "electron-dist/**",
+      "package.json"
+    ],
+    "linux": {
+      "category": "Utility",
+      "icon": "packaging/electron",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "nsis": {
+      "installerIcon": "packaging/electron/icon.ico",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "uninstallerIcon": "packaging/electron/icon.ico"
+    },
+    "win": {
+      "icon": "packaging/electron/icon.ico",
+      "target": [
+        "portable",
+        "nsis"
+      ]
+    }
   }
 }

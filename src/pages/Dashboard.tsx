@@ -55,7 +55,33 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="grid gap-6">
+    <div className="workbench-page">
+      <section className="page-hero">
+        <div className="page-hero__header">
+          <div>
+            <p className="panel-kicker">Support overview</p>
+            <h2 className="page-hero__title">
+              Active Android remediation workstation
+            </h2>
+            <p className="page-hero__description">
+              Keep the phone state visible, surface suspicious utilities fast,
+              and move only reviewed packages into cleanup. Cleanroom is tuned
+              for technician judgement, not blind automation.
+            </p>
+          </div>
+          <div className="page-hero__actions">
+            <div className="artifact-chip">
+              <ShieldAlert className="h-4 w-4" />
+              Human-reviewed cleanup
+            </div>
+            <div className="artifact-chip">
+              <BellRing className="h-4 w-4" />
+              Notification-aware scoring
+            </div>
+          </div>
+        </div>
+      </section>
+
       <DeviceCard
         activeDeviceSerial={activeDeviceSerial}
         connectionMessage={
@@ -69,29 +95,33 @@ export function Dashboard() {
         selectionRequired={selectionRequired}
       />
 
-      <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+      <section className="metric-grid">
         {metrics.map((metric) => {
           const Icon = metric.icon;
           return (
-            <article
-              key={metric.label}
-              className="metric-tile rounded-[24px] p-6"
-            >
+            <article className="metric-card" key={metric.label}>
               <div className="flex items-center justify-between">
-                <span className="text-xs uppercase tracking-[0.18em] text-text-muted">
+                <span className="metric-card__label">
                   {metric.label}
                 </span>
                 <Icon className={`h-5 w-5 ${metric.tone}`} />
               </div>
-              <div className="mt-5 text-4xl font-semibold text-text">
-                {metric.value}
+              <div className="metric-card__value">{metric.value}</div>
+              <div className="metric-card__meta">
+                {metric.label === "Contaminants detected"
+                  ? "Packages that crossed the current contaminant threshold"
+                  : metric.label === "Launcher warnings"
+                    ? "Apps that could affect home/default app recovery"
+                    : metric.label === "User packages scanned"
+                      ? "Primary review scope for this support session"
+                      : "Live notification-heavy apps worth technician review"}
               </div>
             </article>
           );
         })}
       </section>
 
-      <section className="grid gap-6 2xl:grid-cols-[1.15fr_0.85fr]">
+      <section className="overview-grid">
         <ReportPanel
           onSelectReport={(reportId) => {
             setActiveReportId(reportId);
@@ -99,36 +129,34 @@ export function Dashboard() {
           }}
           reports={bootstrap?.reports ?? []}
         />
-        <div className="glass-panel rounded-[28px] p-6">
-          <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
-            Operator overview
-          </p>
-          <div className="mt-4 rounded-[22px] border border-line bg-surface-soft p-5">
-            <h3 className="text-lg font-semibold text-text">
-              Support-desk posture
-            </h3>
-            <div className="mt-4 grid gap-4 text-sm leading-6 text-text-muted">
-              <p>
-                Cleanroom is tuned for deliberate review. High-risk items
-                surface first, but removals stay human-owned.
-              </p>
-              <p>
-                The strongest experience should be: device visible, suspicious
-                apps easy to scan, and cleanup decisions obvious to explain to
-                the next technician.
+
+        <div className="dashboard-banner">
+          <div className="dashboard-banner__row">
+            <div>
+              <p className="section-kicker">Operator posture</p>
+              <h3 className="dashboard-banner__title">
+                What the technician should do next
+              </h3>
+              <p className="dashboard-banner__copy">
+                Start with device readiness, move into table-led scan review,
+                and keep cleanup limited to packages you can explain in a
+                service record.
               </p>
             </div>
+            <div className="tag-row">
+              <span className="tag">Review first</span>
+              <span className="tag tag--warning">Guardrails visible</span>
+            </div>
           </div>
-          <div className="mt-4 rounded-[22px] border border-line bg-surface-soft p-5">
-            <p className="text-xs uppercase tracking-[0.18em] text-text-muted">
-              Most recent cleanup
-            </p>
+
+          <div className="info-card">
+            <div className="info-card__label">Most recent cleanup</div>
             {recentReport ? (
               <div className="mt-3">
                 <h4 className="text-base font-semibold text-text">
                   {recentReport.deviceLabel}
                 </h4>
-                <p className="mt-1 text-sm leading-6 text-text-muted">
+                <p className="mt-2 text-sm leading-6 text-text-muted">
                   {recentReport.summary}
                 </p>
               </div>
@@ -137,6 +165,27 @@ export function Dashboard() {
                 No cleanup reports recorded on this workstation yet.
               </p>
             )}
+          </div>
+
+          <div className="device-grid">
+            <div className="info-card">
+              <div className="info-card__label">Connected devices</div>
+              <div className="info-card__value">{devices.length}</div>
+              <div className="info-card__copy">
+                Active ADB-visible handsets for this bench session
+              </div>
+            </div>
+            <div className="info-card">
+              <div className="info-card__label">Active target</div>
+              <div className="info-card__value">
+                {activeDeviceSerial ? "Selected" : "None"}
+              </div>
+              <div className="info-card__copy">
+                {activeDeviceSerial
+                  ? "A device is selected for scan and cleanup"
+                  : "Choose a device before technician actions can continue"}
+              </div>
+            </div>
           </div>
         </div>
       </section>

@@ -32,14 +32,14 @@ export function AppShell({
   onSelectPage,
 }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-background text-text">
-      <div className="app-shell flex min-h-screen flex-col overflow-hidden lg:flex-row">
+    <div className="h-screen overflow-hidden bg-background text-text">
+      <div className="app-shell flex h-full flex-col overflow-hidden lg:flex-row">
         <Sidebar
           activePage={activePage}
           items={navItems}
           onSelectPage={onSelectPage}
         />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="app-shell__body flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <Titlebar
             bootstrapError={bootstrapError}
             bootstrapStatus={bootstrapStatus}
@@ -48,9 +48,7 @@ export function AppShell({
             metadataProgress={metadataProgress}
             onRefresh={onRefresh}
           />
-          <main className="flex-1 overflow-y-auto px-4 pb-5 pt-4 lg:px-7 lg:pb-7 lg:pt-5 xl:px-9">
-            {children}
-          </main>
+          <main className="workspace-scroll">{children}</main>
         </div>
       </div>
     </div>

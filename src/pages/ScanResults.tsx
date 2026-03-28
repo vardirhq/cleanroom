@@ -2,6 +2,7 @@ import { Search } from "lucide-react";
 import { ContaminantCard } from "../components/scan/ContaminantCard";
 import { ScanResultsTable } from "../components/scan/ScanResultsTable";
 import { EmptyState } from "../components/ui/EmptyState";
+import { StateNotice } from "../components/ui/StateNotice";
 import { useDeviceStore } from "../stores/useDeviceStore";
 import { useScanStore } from "../stores/useScanStore";
 import type { ContaminantCategory } from "../types/package";
@@ -42,7 +43,10 @@ export function ScanResults() {
     (state) => state.togglePackageSelection,
   );
   const device = useDeviceStore((state) => state.device);
+  const bootstrapError = useDeviceStore((state) => state.bootstrapError);
+  const bootstrapStatus = useDeviceStore((state) => state.bootstrapStatus);
   const selectionRequired = useDeviceStore((state) => state.selectionRequired);
+  const metadataProgress = useScanStore((state) => state.metadataProgress);
   const visiblePackages = getVisiblePackages();
   const visibleContaminants = visiblePackages
     .filter((item) => item.contaminant !== null)
@@ -58,56 +62,69 @@ export function ScanResults() {
 
   if (selectionRequired) {
     return (
-      <EmptyState
+      <StateNotice
         description="Multiple devices are connected. Choose the active phone from Dashboard before loading a scan."
         title="Device selection required"
+        tone="warning"
+      />
+    );
+  }
+
+  if (bootstrapStatus === "error") {
+    return (
+      <StateNotice
+        description={
+          bootstrapError ??
+          "The current device session failed to load. Refresh device state and retry."
+        }
+        title="Scan bootstrap failed"
+        tone="error"
       />
     );
   }
 
   if (!device || device.status !== "ready" || installedPackages.length === 0) {
     return (
-      <EmptyState
+      <StateNotice
         description="No package inventory is available yet. Connect an authorized Android device, or finish device authorization, then refresh device state to pull installed packages."
         title="No package inventory loaded"
+        tone={bootstrapStatus === "loading" ? "loading" : "info"}
       />
     );
   }
 
   return (
-    <div className="grid gap-6">
-      <section className="glass-panel rounded-[28px] p-6">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
-              Review queue
-            </p>
-            <h3 className="mt-2 text-2xl font-semibold text-text">
+    <div className="workbench-page">
+      <section className="page-hero">
+        <div className="page-hero__header">
+          <div className="max-w-4xl">
+            <p className="panel-kicker">Review queue</p>
+            <h2 className="page-hero__title">
               Scan results and operator selection
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-text-muted">
+            </h2>
+            <p className="page-hero__description">
               Keep the table as the source of truth, then carry only reviewed
               packages into cleanup. Flagged contaminants surface above the
               table, while advisory items stay visible below for manual
               judgement.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="page-hero__actions">
             <button
-              className="rounded-[16px] border border-line bg-surface-soft px-4 py-2.5 text-sm font-medium text-text transition hover:bg-panel-soft"
+              className="ui-button"
               onClick={selectAllFlagged}
               type="button"
             >
               Select visible flagged
             </button>
             <button
-              className="rounded-[16px] border border-line bg-surface-soft px-4 py-2.5 text-sm font-medium text-text transition hover:bg-panel-soft"
+              className="ui-button ui-button--ghost"
               onClick={clearSelection}
               type="button"
             >
               Clear
             </button>
-            <div className="rounded-[16px] border border-line bg-panel px-4 py-2.5 text-sm text-text-muted">
+            <div className="artifact-chip">
               {selectedPackageIds.length} selected · {selectedVisibleCount}{" "}
               visible
             </div>
@@ -115,12 +132,12 @@ export function ScanResults() {
         </div>
       </section>
 
-      <section className="glass-panel rounded-[28px] p-5">
-        <div className="grid gap-4 xl:grid-cols-[1.25fr_repeat(5,minmax(0,auto))] xl:items-center">
-          <label className="relative block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+      <section className="filter-bar">
+        <div className="filter-grid">
+          <label className="search-field">
+            <Search className="search-field__icon h-4 w-4" />
             <input
-              className="w-full rounded-[16px] border border-line bg-surface-soft py-2.5 pl-10 pr-4 text-sm text-text outline-none transition focus:border-primary"
+              className="ui-input"
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search app name, package, reason, or category"
               type="search"
@@ -128,7 +145,7 @@ export function ScanResults() {
             />
           </label>
           <select
-            className="rounded-[16px] border border-line bg-surface-soft px-3 py-2.5 text-sm text-text"
+            className="ui-select"
             onChange={(event) =>
               setQuickFilter(event.target.value as typeof quickFilter)
             }
@@ -142,7 +159,7 @@ export function ScanResults() {
             <option value="selected">Selected</option>
           </select>
           <select
-            className="rounded-[16px] border border-line bg-surface-soft px-3 py-2.5 text-sm text-text"
+            className="ui-select"
             onChange={(event) =>
               setCategoryFilter(
                 event.target.value as ContaminantCategory | "all",
@@ -157,7 +174,7 @@ export function ScanResults() {
             ))}
           </select>
           <select
-            className="rounded-[16px] border border-line bg-surface-soft px-3 py-2.5 text-sm text-text"
+            className="ui-select"
             onChange={(event) =>
               setScopeFilter(event.target.value as "all" | "user" | "system")
             }
@@ -168,7 +185,7 @@ export function ScanResults() {
             <option value="system">System / OEM only</option>
           </select>
           <select
-            className="rounded-[16px] border border-line bg-surface-soft px-3 py-2.5 text-sm text-text"
+            className="ui-select"
             onChange={(event) =>
               setGroupMode(event.target.value as typeof groupMode)
             }
@@ -179,30 +196,43 @@ export function ScanResults() {
             <option value="none">No grouping</option>
           </select>
           <button
-            className="rounded-[16px] border border-line bg-surface-soft px-4 py-2.5 text-sm font-medium text-text transition hover:bg-panel-soft"
+            className="ui-button ui-button--ghost"
             onClick={clearFilters}
             type="button"
           >
             Reset filters
           </button>
         </div>
-        <p className="mt-3 text-sm text-text-muted">
+
+        <p className="text-sm text-text-muted">
           Showing {visiblePackages.length} of {installedPackages.length}{" "}
           packages in the current review view. {summary.userPackageCount} user ·{" "}
-          {summary.systemPackageCount} system/OEM.
+          {summary.systemPackageCount} system/OEM.{" "}
+          {summary.snapshotSource === "session_cache"
+            ? "Session cache reused."
+            : "Live device scan."}
         </p>
       </section>
 
+      {metadataProgress.inFlight ? (
+        <StateNotice
+          description={`Resolved ${metadataProgress.completed} of ${metadataProgress.total} package metadata records. Labels and icons will continue to improve while you review the current table.`}
+          title="Metadata enrichment is still running"
+          tone="loading"
+        />
+      ) : null}
+
       {visibleContaminants.length > 0 ? (
-        <section className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
+        <section className="contaminant-grid">
           {visibleContaminants.map((item) => (
             <ContaminantCard item={item} key={item.packageName} />
           ))}
         </section>
       ) : advisoryItems.length > 0 ? (
-        <EmptyState
+        <StateNotice
           description={`${advisoryItems.length} package${advisoryItems.length === 1 ? " has" : "s have"} suspicious signals, but none crossed the contaminant threshold yet. Review the advisory entries in the table below before cleanup.`}
           title="No contaminants crossed the threshold"
+          tone="warning"
         />
       ) : (
         <EmptyState

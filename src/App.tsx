@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { listen } from "@tauri-apps/api/event";
 import {
   Activity,
   ClipboardList,
@@ -8,7 +7,7 @@ import {
   Settings,
 } from "lucide-react";
 import { AppShell } from "./app/AppShell";
-import { getPackageMetadata } from "./lib/api";
+import { getPackageMetadata, onDeviceStateChanged } from "./lib/api";
 import { Dashboard } from "./pages/Dashboard";
 import { ScanResults } from "./pages/ScanResults";
 import { CleanupSession } from "./pages/CleanupSession";
@@ -84,7 +83,7 @@ function App() {
     let unlisten: (() => void) | null = null;
 
     const subscribe = async () => {
-      unlisten = await listen("cleanroom://device-state-changed", () => {
+      unlisten = await onDeviceStateChanged(() => {
         if (disposed) {
           return;
         }

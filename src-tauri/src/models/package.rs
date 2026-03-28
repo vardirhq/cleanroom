@@ -33,7 +33,7 @@ pub enum PackageScope {
     System,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InstalledPackageRecord {
     pub active_notification_count: usize,
@@ -46,6 +46,7 @@ pub struct InstalledPackageRecord {
     pub exact_match: bool,
     #[serde(skip_serializing)]
     pub is_home_package: bool,
+    pub launcher_risk: bool,
     pub metadata_resolved: bool,
     pub protected_package: bool,
     #[serde(skip_serializing)]
@@ -65,6 +66,13 @@ pub struct InstalledPackageRecord {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ScanSnapshotSource {
+    Live,
+    SessionCache,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ScanSummary {
     pub active_notification_count: usize,
@@ -75,6 +83,7 @@ pub struct ScanSummary {
     pub notification_suspect_count: usize,
     pub protected_count: usize,
     pub scanned_package_count: usize,
+    pub snapshot_source: ScanSnapshotSource,
     pub system_package_count: usize,
     pub user_package_count: usize,
 }

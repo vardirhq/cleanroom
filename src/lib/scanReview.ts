@@ -24,7 +24,7 @@ export function buildCleanupPlan(
   );
 
   return {
-    launcherWarnings: selected.filter((item) => item.launcherCandidate).length,
+    launcherWarnings: selected.filter((item) => item.launcherRisk).length,
     protectedCount: selected.filter((item) => item.protectedPackage).length,
     selectedCount: selected.length,
   };
@@ -86,7 +86,7 @@ function matchesQuickFilter(
     case "protected":
       return item.protectedPackage;
     case "launcher":
-      return item.launcherCandidate;
+      return item.launcherRisk || item.launcherCandidate;
     case "selected":
       return selectedPackageIds.includes(item.packageName);
     default:

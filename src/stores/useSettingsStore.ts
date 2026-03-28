@@ -30,7 +30,7 @@ const storedTheme =
 
 export const useSettingsStore = create<SettingsStore>((set) => ({
   activePage: "dashboard",
-  adbStrategy: "system",
+  adbStrategy: "bundled",
   activeReportId: null,
   developerMode: false,
   effectiveExportDirectory: null,

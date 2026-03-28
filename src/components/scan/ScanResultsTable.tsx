@@ -21,27 +21,24 @@ export function ScanResultsTable({
   const groupedItems = buildGroups(items, groupMode);
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-line bg-panel-strong shadow-[0_24px_48px_rgba(15,23,42,0.1)]">
-      <table className="min-w-full border-collapse">
-        <thead className="bg-surface-soft text-left text-xs uppercase tracking-[0.18em] text-text-muted">
+    <div className="table-shell">
+      <table>
+        <thead>
           <tr>
-            <th className="px-5 py-4 font-medium">Select</th>
-            <th className="px-5 py-4 font-medium">App</th>
-            <th className="px-5 py-4 font-medium">Scope</th>
-            <th className="px-5 py-4 font-medium">Notifications</th>
-            <th className="px-5 py-4 font-medium">Suspicion</th>
-            <th className="px-5 py-4 font-medium">Signals</th>
+            <th>Select</th>
+            <th>App</th>
+            <th>Scope</th>
+            <th>Notifications</th>
+            <th>Suspicion</th>
+            <th>Signals</th>
           </tr>
         </thead>
         <tbody>
           {groupedItems.map(({ label, items: groupItems }) => (
             <Fragment key={`group-${label || "all"}`}>
               {label ? (
-                <tr className="border-t border-line bg-surface-soft/60">
-                  <td
-                    className="px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-text-muted"
-                    colSpan={6}
-                  >
+                <tr className="table-group-row">
+                  <td colSpan={6}>
                     {label}
                   </td>
                 </tr>
@@ -52,9 +49,9 @@ export function ScanResultsTable({
                 return (
                   <tr
                     key={item.packageName}
-                    className="border-t border-line text-sm text-text-muted transition hover:bg-surface-soft/70"
+                    className="transition hover:bg-surface-soft/70"
                   >
-                    <td className="px-5 py-5 align-top">
+                    <td>
                       <input
                         checked={selected}
                         className="h-4 w-4 accent-sky-500"
@@ -62,50 +59,54 @@ export function ScanResultsTable({
                         type="checkbox"
                       />
                     </td>
-                    <td className="px-5 py-5 align-top">
-                      <div className="flex items-center gap-3">
+                    <td>
+                      <div className="table-app-cell">
                         <AppIcon
                           iconDataUrl={item.iconDataUrl}
                           name={item.name}
                           size="sm"
                         />
                         <div>
-                          <div className="flex flex-wrap items-center gap-2 font-medium text-text">
+                          <div className="table-app-name">
                             <span>{item.name}</span>
                             {item.protectedPackage ? (
-                              <span className="rounded-full bg-info/14 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-info">
+                              <span className="tag tag--info">
                                 Protected
                               </span>
                             ) : null}
-                            {item.launcherCandidate ? (
-                              <span className="rounded-full bg-warning/14 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-warning">
-                                Launcher
+                            {item.launcherRisk ? (
+                              <span className="tag tag--warning">
+                                Launcher risk
+                              </span>
+                            ) : item.launcherCandidate ? (
+                              <span className="tag tag--info">
+                                Launcher-capable
                               </span>
                             ) : null}
                           </div>
-                          <div className="mt-1 break-all">
+                          <div className="mt-1 break-all text-sm text-text-muted">
                             {item.packageName}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-5 align-top">{item.scope}</td>
-                    <td className="px-5 py-5 align-top">
+                    <td>{item.scope}</td>
+                    <td>
                       {item.activeNotificationCount > 0 ? (
                         <div className="flex flex-wrap items-center gap-2">
                           <span>{item.activeNotificationCount}</span>
                           {item.aggressiveChannelCount > 0 ? (
-                            <span className="rounded-full bg-info/14 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-info">
+                            <span className="tag tag--info">
                               Ch {item.aggressiveChannelCount}
                             </span>
                           ) : null}
                           {item.highImportanceNotificationCount > 0 ? (
-                            <span className="rounded-full bg-warning/14 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-warning">
+                            <span className="tag tag--warning">
                               High {item.highImportanceNotificationCount}
                             </span>
                           ) : null}
                           {item.notificationSpamRisk ? (
-                            <span className="rounded-full bg-danger/14 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-danger">
+                            <span className="tag tag--danger">
                               Spam risk
                             </span>
                           ) : null}
@@ -114,7 +115,7 @@ export function ScanResultsTable({
                         <span>0</span>
                       )}
                     </td>
-                    <td className="px-5 py-5 align-top">
+                    <td>
                       {item.suspicionScore > 0 ? (
                         <div className="flex items-center gap-3">
                           <RiskBadge score={item.suspicionScore} />
@@ -124,7 +125,7 @@ export function ScanResultsTable({
                         <span>None</span>
                       )}
                     </td>
-                    <td className="px-5 py-5 align-top leading-6">
+                    <td className="table-signals">
                       {item.reasons.length > 0
                         ? item.reasons.join(" · ")
                         : "No obvious junk heuristics matched."}

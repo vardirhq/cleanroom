@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
   AlertTriangle,
   CheckCircle2,
+  LayoutGrid,
   LoaderCircle,
   Maximize2,
   Minimize2,
   RefreshCw,
-  ScanSearch,
   ShieldAlert,
   Square,
   X,
 } from "lucide-react";
+import {
+  closeWindow,
+  isWindowMaximized,
+  minimizeWindow,
+  onWindowResized,
+  startWindowDragging,
+  toggleWindowMaximize,
+} from "../../lib/api";
 
 type TitlebarProps = {
   bootstrapStatus: "idle" | "loading" | "ready" | "error";
@@ -26,7 +33,11 @@ type TitlebarProps = {
   onRefresh: () => void;
 };
 
-const appWindow = getCurrentWindow();
+function shouldIgnoreDragTarget(target: EventTarget | null) {
+  return target instanceof Element
+    ? Boolean(target.closest("button, input, select, textarea, a"))
+    : false;
+}
 
 export function Titlebar({
   bootstrapError,
@@ -38,18 +49,23 @@ export function Titlebar({
 }: TitlebarProps) {
   const [isMaximized, setIsMaximized] = useState(false);
 
+  const syncMaximizedState = async () => {
+    const maximized = await isWindowMaximized();
+    setIsMaximized(maximized);
+  };
+
   useEffect(() => {
     let mounted = true;
     let dispose: (() => void) | null = null;
 
     const bind = async () => {
-      const maximized = await appWindow.isMaximized();
+      const maximized = await isWindowMaximized();
       if (mounted) {
         setIsMaximized(maximized);
       }
 
-      dispose = await appWindow.onResized(async () => {
-        const next = await appWindow.isMaximized();
+      dispose = await onWindowResized(async () => {
+        const next = await isWindowMaximized();
         if (mounted) {
           setIsMaximized(next);
         }
@@ -63,6 +79,35 @@ export function Titlebar({
       dispose?.();
     };
   }, []);
+
+  const handleDragMouseDown = (event: React.MouseEvent<HTMLElement>) => {
+    if (event.button !== 0 || shouldIgnoreDragTarget(event.target)) {
+      return;
+    }
+
+    void startWindowDragging();
+  };
+
+  const handleDragDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (shouldIgnoreDragTarget(event.target)) {
+      return;
+    }
+
+    void toggleWindowMaximize().then(syncMaximizedState);
+  };
+
+  const handleMinimize = async () => {
+    await minimizeWindow();
+  };
+
+  const handleToggleMaximize = async () => {
+    await toggleWindowMaximize();
+    await syncMaximizedState();
+  };
+
+  const handleClose = async () => {
+    await closeWindow();
+  };
 
   const shellIndicator = (() => {
     switch (bootstrapStatus) {
@@ -89,12 +134,12 @@ export function Titlebar({
             <CheckCircle2 className="h-4 w-4 text-success" />
           ),
           label: deviceSelectionRequired
-            ? "Select active device"
+            ? "Device selection required"
             : deviceStatus === "unauthorized"
-              ? "Awaiting device authorization"
+              ? "Awaiting authorization"
               : deviceStatus === "disconnected"
                 ? "Device not ready"
-                : "Workbench ready",
+                : "Ready for review",
           tone:
             deviceSelectionRequired ||
             deviceStatus === "unauthorized" ||
@@ -130,21 +175,26 @@ export function Titlebar({
 
   return (
     <header className="titlebar border-b border-line">
-      <div className="titlebar__drag-zone" data-tauri-drag-region>
+      <div
+        className="titlebar__drag-zone"
+        data-tauri-drag-region
+        onDoubleClick={handleDragDoubleClick}
+        onMouseDown={handleDragMouseDown}
+      >
         <div className="titlebar__identity" data-tauri-drag-region>
           <div className="titlebar__mark" data-tauri-drag-region>
             <ShieldAlert className="h-4 w-4" />
           </div>
           <div className="min-w-0" data-tauri-drag-region>
+            <p className="titlebar__eyebrow" data-tauri-drag-region>
+              Active workstation
+            </p>
             <div className="titlebar__title-row" data-tauri-drag-region>
               <span className="titlebar__title" data-tauri-drag-region>
-                Active support session
+                Support session
               </span>
-              <span
-                className="titlebar__subtitle titlebar__subtitle--strong"
-                data-tauri-drag-region
-              >
-                Inspect, isolate, remove, verify
+              <span className="titlebar__subtitle" data-tauri-drag-region>
+                Device review, cleanup, reporting
               </span>
             </div>
           </div>
@@ -173,8 +223,8 @@ export function Titlebar({
             </div>
           ) : null}
           <div className="status-chip status-chip--neutral">
-            <ScanSearch className="h-4 w-4 text-text-muted" />
-            <span>Support disk profile</span>
+            <LayoutGrid className="h-4 w-4 text-text-muted" />
+            <span>Technician workflow</span>
           </div>
         </div>
       </div>
@@ -183,7 +233,7 @@ export function Titlebar({
         <button
           aria-label="Minimize window"
           className="window-control"
-          onClick={() => void appWindow.minimize()}
+          onClick={() => void handleMinimize()}
           type="button"
         >
           <Minimize2 className="h-4 w-4" />
@@ -191,7 +241,7 @@ export function Titlebar({
         <button
           aria-label={isMaximized ? "Restore window" : "Maximize window"}
           className="window-control"
-          onClick={() => void appWindow.toggleMaximize()}
+          onClick={() => void handleToggleMaximize()}
           type="button"
         >
           {isMaximized ? (
@@ -203,7 +253,7 @@ export function Titlebar({
         <button
           aria-label="Close window"
           className="window-control window-control--danger"
-          onClick={() => void appWindow.close()}
+          onClick={() => void handleClose()}
           type="button"
         >
           <X className="h-4 w-4" />

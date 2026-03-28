@@ -72,7 +72,7 @@ fn normalize_export_directory(value: Option<String>) -> Option<String> {
 
 fn default_settings() -> AppSettings {
     AppSettings {
-        adb_strategy: AdbStrategy::System,
+        adb_strategy: AdbStrategy::Bundled,
         developer_mode: false,
         export_directory: None,
     }

@@ -24,6 +24,11 @@ pub fn classify_package(
         .map(ToString::to_string)
         .unwrap_or_else(|| prettify_package_name(package_name));
     let label_lower = cached_label.map(str::to_ascii_lowercase);
+    let launcher_branding = if matches!(scope, PackageScope::User) {
+        launcher_branding_score(&segments, label_lower.as_deref())
+    } else {
+        0
+    };
 
     let mut reasons = Vec::new();
     let mut risk_score = 0usize;
@@ -34,6 +39,7 @@ pub fn classify_package(
     let is_home_package = home_package.is_some_and(|value| value == package_name);
     let launcher_candidate =
         is_home_package || segments.iter().any(|segment| is_launcher_segment(segment));
+    let launcher_risk = is_home_package || (launcher_candidate && launcher_branding >= 3);
     let trusted = is_trusted_package(&lower, rules);
     let protected_package = trusted || is_home_package || matches!(scope, PackageScope::System);
 
@@ -79,6 +85,28 @@ pub fn classify_package(
         reasons.push("Package currently resolves as the device home launcher.".to_string());
         signal_count += 1;
         candidate_signal_count += 1;
+    }
+
+    if launcher_candidate && launcher_branding >= 3 {
+        let launcher_score = if launcher_branding >= 4 { 4 } else { 3 };
+        risk_score += launcher_score;
+        add_category_score(
+            &mut category_scores,
+            &ContaminantCategory::FakeLauncher,
+            launcher_score,
+        );
+        reasons.push(
+            "Package presents itself like an alternate home or launcher app on a user-installed package."
+                .to_string(),
+        );
+        signal_count += 1;
+        candidate_signal_count += 1;
+    } else if launcher_candidate {
+        reasons.push(
+            "Package appears launcher-capable and should be reviewed before removal."
+                .to_string(),
+        );
+        signal_count += 1;
     }
 
     let is_candidate = exact_match || candidate_signal_count > 0 || is_home_package;
@@ -196,7 +224,7 @@ pub fn classify_package(
             category,
             icon_data_url: None,
             risk_score,
-            launcher_risk: launcher_candidate,
+            launcher_risk,
             reasons: reasons.clone(),
         })
     } else {
@@ -211,6 +239,7 @@ pub fn classify_package(
         icon_data_url: None,
         exact_match,
         is_home_package,
+        launcher_risk,
         metadata_resolved: false,
         protected_package,
         signal_count,
@@ -341,6 +370,29 @@ fn is_generic_display_segment(segment: &str) -> bool {
     )
 }
 
+fn launcher_branding_score(segments: &[String], label_lower: Option<&str>) -> usize {
+    let mut score = 0usize;
+
+    let strong_terms = ["launcher", "home", "homescreen"];
+    let medium_terms = ["easy", "simple", "senior", "kids", "elder", "big"];
+
+    for term in strong_terms {
+        if label_lower.is_some_and(|label| label.contains(term)) {
+            score += 2;
+        }
+    }
+
+    for term in medium_terms {
+        if segments.iter().any(|segment| segment == term)
+            || label_lower.is_some_and(|label| label.contains(term))
+        {
+            score += 1;
+        }
+    }
+
+    score
+}
+
 fn package_segments(package_name: &str) -> Vec<String> {
     package_name
         .to_ascii_lowercase()
@@ -421,7 +473,7 @@ fn build_contaminant(package: &InstalledPackageRecord) -> Option<ContaminantReco
                 category,
                 icon_data_url: package.icon_data_url.clone(),
                 risk_score: package.suspicion_score,
-                launcher_risk: package.launcher_candidate,
+                launcher_risk: package.launcher_risk,
                 reasons: package.reasons.clone(),
             })
     } else {
@@ -590,5 +642,44 @@ mod tests {
         assert!(installed.protected_package);
         assert!(installed.trusted_match);
         assert!(installed.contaminant.is_none());
+    }
+
+    #[test]
+    fn elevates_user_installed_launcher_branding_into_launcher_risk() {
+        let installed = classify_package(
+            "com.example.easyhome.launcher",
+            Some("Easy Home Launcher"),
+            None,
+            PackageScope::User,
+            0,
+            0,
+            0,
+            &cleaner_rules(),
+        );
+
+        assert!(installed.launcher_candidate);
+        assert!(installed.launcher_risk);
+        assert_eq!(
+            installed.suspected_category,
+            Some(ContaminantCategory::FakeLauncher)
+        );
+        assert!(installed.suspicion_score >= 3);
+    }
+
+    #[test]
+    fn does_not_treat_every_launcher_capable_package_as_launcher_risk() {
+        let installed = classify_package(
+            "com.example.launcher",
+            Some("Launcher Switch"),
+            None,
+            PackageScope::User,
+            0,
+            0,
+            0,
+            &cleaner_rules(),
+        );
+
+        assert!(installed.launcher_candidate);
+        assert!(!installed.launcher_risk);
     }
 }

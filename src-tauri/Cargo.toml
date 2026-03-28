@@ -1,6 +1,6 @@
 [package]
 name = "cleanroom"
-version = "0.1.0"
+version = "0.2.0"
 description = "Clinical desktop utility for Android junk-app cleanup over ADB"
 authors = ["Cleanroom"]
 edition = "2021"

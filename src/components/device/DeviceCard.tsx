@@ -22,20 +22,17 @@ export function DeviceCard({
 }: DeviceCardProps) {
   if (!device && devices.length === 0) {
     return (
-      <section className="glass-panel rounded-[28px] p-6">
-        <div className="flex items-center gap-4">
-          <div className="rounded-[20px] bg-surface-soft p-3.5 text-text-muted">
+      <section className="workbench-panel device-card">
+        <div className="device-summary">
+          <div className="device-summary__mark">
             <Smartphone className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-text">
-              No device connected
-            </h3>
-            <p className="mt-1 text-sm leading-6 text-text-muted">
-              {connectionMessage}
-            </p>
-            <p className="mt-2 text-xs uppercase tracking-[0.18em] text-text-muted">
-              Cleanroom is monitoring ADB and will refresh when the device set
+            <p className="section-kicker">Device readiness</p>
+            <h3 className="device-summary__title">No device connected</h3>
+            <p className="device-summary__copy">{connectionMessage}</p>
+            <p className="device-summary__subtitle">
+              Cleanroom will refresh automatically when the ADB device set
               changes.
             </p>
           </div>
@@ -46,29 +43,29 @@ export function DeviceCard({
 
   if (selectionRequired) {
     return (
-      <section className="glass-panel rounded-[28px] p-6">
-        <div className="flex flex-col gap-6">
-          <div className="flex items-start gap-4">
-            <div className="rounded-[20px] bg-warning/12 p-3.5 text-warning">
-              <Smartphone className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-text">
+      <section className="workbench-panel device-card">
+        <div className="device-summary">
+          <div className="device-summary__mark">
+            <Smartphone className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="section-kicker">Device readiness</p>
+            <div className="device-summary__title-row">
+              <h3 className="device-summary__title">
                 Select a device before scanning
               </h3>
-              <p className="mt-1 text-sm leading-6 text-text-muted">
-                {connectionMessage}
-              </p>
-              <p className="mt-2 text-xs uppercase tracking-[0.18em] text-text-muted">
-                Cleanroom will only scan and clean the device you explicitly
-                select.
-              </p>
+              <span className="status-badge status-badge--unauthorized">
+                review blocked
+              </span>
             </div>
+            <p className="device-summary__copy">{connectionMessage}</p>
           </div>
-          <div className="grid gap-3 xl:grid-cols-2">
+        </div>
+        <div className="device-select-grid">
+          <div className="device-grid">
             {devices.map((candidate) => (
               <button
-                className="rounded-[22px] border border-line bg-surface-soft p-4 text-left transition hover:border-line-strong hover:bg-panel-soft"
+                className="device-select-card"
                 key={candidate.serial}
                 onClick={() => onSelectDevice(candidate.serial)}
                 type="button"
@@ -85,12 +82,19 @@ export function DeviceCard({
                       {formatDeviceSubtitle(candidate)}
                     </p>
                   </div>
-                  <span className="rounded-[14px] border border-line bg-panel px-3 py-2 text-xs font-medium text-text">
+                  <span className="ui-button ui-button--ghost">
                     Select
                   </span>
                 </div>
               </button>
             ))}
+          </div>
+          <div className="info-card">
+            <div className="info-card__label">Guardrail</div>
+            <div className="info-card__copy">
+              Scan and cleanup stay disabled until one handset is explicitly
+              chosen for the current support session.
+            </div>
           </div>
         </div>
       </section>
@@ -99,18 +103,15 @@ export function DeviceCard({
 
   if (!device) {
     return (
-      <section className="glass-panel rounded-[28px] p-6">
-        <div className="flex items-center gap-4">
-          <div className="rounded-[20px] bg-surface-soft p-3.5 text-text-muted">
+      <section className="workbench-panel device-card">
+        <div className="device-summary">
+          <div className="device-summary__mark">
             <Smartphone className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-text">
-              No active device selected
-            </h3>
-            <p className="mt-1 text-sm leading-6 text-text-muted">
-              {connectionMessage}
-            </p>
+            <p className="section-kicker">Device readiness</p>
+            <h3 className="device-summary__title">No active device selected</h3>
+            <p className="device-summary__copy">{connectionMessage}</p>
           </div>
         </div>
       </section>
@@ -118,73 +119,93 @@ export function DeviceCard({
   }
 
   return (
-    <section className="glass-panel rounded-[28px] p-6">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-[16px] bg-primary-strong/12 p-2.5 text-primary">
-                <Smartphone className="h-5 w-5" />
-              </div>
-              <h3 className="text-2xl font-semibold text-text">
-                {device.model}
-              </h3>
+    <section className="workbench-panel device-card device-card--ready">
+      <div className="min-w-0">
+        <div className="device-summary">
+          <div className="device-summary__mark">
+            <Smartphone className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="section-kicker">Active device</p>
+            <div className="device-summary__title-row">
+              <h3 className="device-summary__title">{device.model}</h3>
               <StatusBadge status={device.status} />
             </div>
-            <p className="mt-2 text-sm text-text-muted">
+            <p className="device-summary__subtitle">
               {formatDeviceSubtitle(device)}
             </p>
-            <p className="mt-5 max-w-2xl text-sm leading-6 text-text-muted">
+            <p className="device-summary__copy">
               {device.status === "unauthorized"
-                ? "ADB can see the handset, but Android has not authorized this workstation yet. Unlock the phone and accept the USB debugging prompt. Cleanroom will refresh automatically when authorization changes."
+                ? "ADB can see the handset, but Android has not authorized this workstation yet. Unlock the phone and accept the USB debugging prompt."
                 : device.status === "disconnected"
-                  ? "The device is visible to ADB but not in a ready state. Reconnect the cable or restart USB debugging. Cleanroom will rescan when the connection state changes."
-                  : "Current session is scoped to a single device. System packages remain hidden by default until the scan engine is ready to classify them safely."}
+                  ? "The device is visible to ADB but not in a ready state. Reconnect the cable or restart USB debugging."
+                  : "This session is currently scoped to one device. Review remains focused on user-installed packages by default, with system packages protected from bulk cleanup."}
             </p>
-            <p className="mt-3 text-sm text-text-muted">{connectionMessage}</p>
+            <p className="device-summary__subtitle">{connectionMessage}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4">
+        <div className="info-card">
+          <div className="info-card__label">Technician guardrails</div>
+          <div className="mt-3 grid gap-2 text-sm text-text-muted">
+            <div className="flex items-center gap-2 text-text">
+              <ShieldCheck className="h-4 w-4 text-success" />
+              Launcher removals always require explicit review.
+            </div>
+            <div>Protected packages stay out of bulk actions.</div>
+            <div>Every cleanup action is retained in local reporting.</div>
           </div>
         </div>
 
-        <div className="space-y-4 lg:w-[320px]">
-          {devices.length > 1 ? (
-            <div className="rounded-[22px] border border-line bg-surface-soft px-4 py-4">
-              <div className="text-sm font-medium text-text">
-                Connected devices
-              </div>
-              <div className="mt-3 grid gap-2">
-                {devices.map((candidate) => (
-                  <button
-                    className={`rounded-[16px] border px-3 py-3 text-left text-sm transition ${
-                      candidate.serial === activeDeviceSerial
-                        ? "border-primary/40 bg-primary/10 text-text"
-                        : "border-line bg-panel text-text-muted hover:bg-panel-soft"
-                    }`}
-                    key={candidate.serial}
-                    onClick={() => onSelectDevice(candidate.serial)}
-                    type="button"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium">{candidate.model}</span>
-                      <StatusBadge status={candidate.status} />
-                    </div>
-                    <div className="mt-1 text-xs">{candidate.serialMasked}</div>
-                  </button>
-                ))}
-              </div>
+        <div className="device-grid">
+          <div className="info-card">
+            <div className="info-card__label">Connection</div>
+            <div className="info-card__value">{devices.length}</div>
+            <div className="info-card__copy">
+              device{devices.length === 1 ? "" : "s"} visible to this
+              workstation
             </div>
-          ) : null}
-          <div className="rounded-[22px] border border-line bg-surface-soft px-4 py-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-text">
-              <ShieldCheck className="h-4 w-4 text-success" />
-              Technician guardrails
+          </div>
+          <div className="info-card">
+            <div className="info-card__label">Target serial</div>
+            <div className="info-card__value">{device.serialMasked}</div>
+            <div className="info-card__copy">
+              Active cleanup target for this support session
             </div>
-            <ul className="mt-3 grid gap-2 text-sm text-text-muted">
-              <li>Launcher removals require explicit review.</li>
-              <li>Protected packages stay out of bulk actions.</li>
-              <li>Every cleanup step is logged for reporting.</li>
-            </ul>
           </div>
         </div>
+
+        {devices.length > 1 ? (
+          <div className="info-card">
+            <div className="info-card__label">Connected devices</div>
+            <div className="device-select-grid mt-3">
+              {devices.map((candidate) => (
+                <button
+                  className={`device-select-card ${
+                    candidate.serial === activeDeviceSerial
+                      ? "device-select-card--active"
+                      : ""
+                  }`}
+                  key={candidate.serial}
+                  onClick={() => onSelectDevice(candidate.serial)}
+                  type="button"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium text-text">
+                      {candidate.model}
+                    </span>
+                    <StatusBadge status={candidate.status} />
+                  </div>
+                  <div className="mt-1 text-sm text-text-muted">
+                    {candidate.serialMasked}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );

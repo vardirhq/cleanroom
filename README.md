@@ -16,6 +16,28 @@ pnpm install
 pnpm tauri dev
 ```
 
+Electron migration path:
+
+```bash
+pnpm build:electron:sidecar
+pnpm electron:dev
+```
+
+If `electron:dev` fails with `Electron failed to install correctly`, allow the blocked install script first:
+
+```bash
+pnpm approve-builds
+```
+
+Electron packaging:
+
+```bash
+pnpm dist:electron:linux
+pnpm dist:electron:win
+```
+
+These package commands stage the platform resources and Rust sidecar into `electron-resources/` before invoking `electron-builder`.
+
 ## Quality gate
 
 Frontend:
@@ -40,6 +62,15 @@ Combined:
 ```bash
 pnpm quality
 ```
+
+Windows packaging:
+
+```bash
+pnpm build:windows:portable
+pnpm build:windows:installer
+```
+
+`pnpm build:windows:installer` requires `makensis`. See [Windows cross-build notes](./docs/windows-cross-build.md).
 
 ## Docs
 

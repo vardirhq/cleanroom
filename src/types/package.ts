@@ -18,6 +18,7 @@ export type ContaminantRecord = {
 };
 
 export type PackageScope = "user" | "system";
+export type ScanSnapshotSource = "live" | "session_cache";
 
 export type InstalledPackageRecord = {
   activeNotificationCount: number;
@@ -26,6 +27,7 @@ export type InstalledPackageRecord = {
   highImportanceNotificationCount: number;
   iconDataUrl: string | null;
   launcherCandidate: boolean;
+  launcherRisk: boolean;
   metadataResolved: boolean;
   name: string;
   notificationSpamRisk: boolean;
@@ -45,6 +47,7 @@ export type ScanSummary = {
   notificationSuspectCount: number;
   protectedCount: number;
   scannedPackageCount: number;
+  snapshotSource: ScanSnapshotSource;
   systemPackageCount: number;
   userPackageCount: number;
 };

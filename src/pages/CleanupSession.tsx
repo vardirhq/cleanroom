@@ -37,7 +37,7 @@ export function CleanupSession() {
     selectedPackageIds.includes(item.packageName),
   );
   const launcherRiskSelected = selectedPackages.some(
-    (item) => item.launcherCandidate,
+    (item) => item.launcherRisk,
   );
   const protectedSelected = selectedPackages.some(
     (item) => item.protectedPackage,
@@ -77,38 +77,53 @@ export function CleanupSession() {
   };
 
   return (
-    <div className="grid gap-6">
-      <CleanupSummaryCard plan={cleanupPlan} />
-      <section className="glass-panel rounded-[28px] p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
-              Execution review
-            </p>
-            <h3 className="mt-2 text-2xl font-semibold text-text">
-              Selected packages
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-text-muted">
-              Review the removal set before execution. Uninstall runs
-              package-by-package over ADB and reports each result.
+    <div className="workbench-page">
+      <section className="page-hero">
+        <div className="page-hero__header">
+          <div className="max-w-4xl">
+            <p className="panel-kicker">Cleanup execution</p>
+            <h2 className="page-hero__title">
+              Review the plan before anything is removed
+            </h2>
+            <p className="page-hero__description">
+              Cleanup runs package-by-package over ADB. Protected apps, launcher
+              risk, and device readiness remain visible here so the technician
+              can make the final call.
             </p>
           </div>
-          <button
-            className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-danger/40 bg-danger/12 px-4 py-2 text-sm font-medium text-text transition hover:bg-danger/18 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={cleanupBlocked}
-            onClick={() => void executeCleanup()}
-            type="button"
-          >
-            {isRunningCleanup ? (
-              <LoaderCircle className="h-4 w-4 animate-spin" />
-            ) : (
-              <ShieldAlert className="h-4 w-4" />
-            )}
-            {isRunningCleanup ? "Running cleanup" : "Run cleanup"}
-          </button>
+          <div className="page-hero__actions">
+            <button
+              className="ui-button ui-button--danger"
+              disabled={cleanupBlocked}
+              onClick={() => void executeCleanup()}
+              type="button"
+            >
+              {isRunningCleanup ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <ShieldAlert className="h-4 w-4" />
+              )}
+              {isRunningCleanup ? "Running cleanup" : "Run cleanup"}
+            </button>
+          </div>
         </div>
+      </section>
+
+      <CleanupSummaryCard plan={cleanupPlan} />
+      <section className="cleanup-grid">
+        <div className="workbench-panel">
+          <div className="panel-header">
+            <div>
+              <p className="section-kicker">Execution review</p>
+              <h3 className="panel-title mt-3">Selected packages</h3>
+              <p className="panel-copy">
+                Review the removal set before execution. Uninstall runs
+                package-by-package and returns a result record for each package.
+              </p>
+            </div>
+          </div>
         {launcherRiskSelected ? (
-          <label className="mt-5 flex items-start gap-3 rounded-[20px] border border-warning/30 bg-warning/8 p-4 text-sm text-text-muted">
+          <label className="reason-card mt-5 text-sm text-text-muted">
             <input
               checked={launcherRemovalConfirmed}
               className="mt-0.5 h-4 w-4 accent-amber-500"
@@ -124,16 +139,16 @@ export function CleanupSession() {
           </label>
         ) : null}
         {launcherRiskSelected ? (
-          <div className="mt-3 flex flex-wrap gap-3">
+          <div className="inline-actions mt-3">
             <button
-              className="rounded-[14px] border border-line bg-surface-soft px-3.5 py-2.5 text-sm text-text transition hover:bg-panel-soft"
+              className="ui-button ui-button--ghost"
               onClick={() => void openLauncherRecoverySettings("home")}
               type="button"
             >
               Open home app settings
             </button>
             <button
-              className="rounded-[14px] border border-line bg-surface-soft px-3.5 py-2.5 text-sm text-text transition hover:bg-panel-soft"
+              className="ui-button ui-button--ghost"
               onClick={() => void openLauncherRecoverySettings("default_apps")}
               type="button"
             >
@@ -142,29 +157,26 @@ export function CleanupSession() {
           </div>
         ) : null}
         {protectedSelected ? (
-          <div className="mt-5 rounded-[20px] border border-info/30 bg-info/8 p-4 text-sm text-text-muted">
+          <div className="reason-card mt-5 text-sm text-text-muted">
             Protected packages are selected in this plan. Remove them from the
             selection before cleanup will enable.
           </div>
         ) : null}
         {selectionRequired ? (
-          <div className="mt-5 rounded-[20px] border border-warning/30 bg-warning/8 p-4 text-sm text-text-muted">
+          <div className="reason-card mt-5 text-sm text-text-muted">
             Multiple devices are connected. Choose the active device from
             Dashboard before cleanup can run.
           </div>
         ) : null}
         {!selectionRequired && device?.status !== "ready" ? (
-          <div className="mt-5 rounded-[20px] border border-warning/30 bg-warning/8 p-4 text-sm text-text-muted">
+          <div className="reason-card mt-5 text-sm text-text-muted">
             Cleanup is disabled until an authorized ready device is selected.
           </div>
         ) : null}
         {selectedPackages.length > 0 ? (
-          <div className="mt-5 grid gap-3">
+          <div className="package-list mt-5">
             {selectedPackages.map((item) => (
-              <article
-                className="flex flex-col gap-3 rounded-[22px] border border-line bg-surface-soft p-4 lg:flex-row lg:items-center lg:justify-between"
-                key={item.packageName}
-              >
+              <article className="package-row" key={item.packageName}>
                 <div className="flex items-start gap-3">
                   <AppIcon
                     iconDataUrl={item.iconDataUrl}
@@ -175,13 +187,17 @@ export function CleanupSession() {
                     <div className="flex items-center gap-2 font-medium text-text">
                       <span>{item.name}</span>
                       {item.protectedPackage ? (
-                        <span className="rounded-full bg-info/14 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-info">
+                        <span className="tag tag--info">
                           Protected
                         </span>
                       ) : null}
-                      {item.launcherCandidate ? (
-                        <span className="rounded-full bg-warning/14 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-warning">
-                          Launcher
+                      {item.launcherRisk ? (
+                        <span className="tag tag--warning">
+                          Launcher risk
+                        </span>
+                      ) : item.launcherCandidate ? (
+                        <span className="tag tag--info">
+                          Launcher-capable
                         </span>
                       ) : null}
                     </div>
@@ -191,7 +207,7 @@ export function CleanupSession() {
                   </div>
                 </div>
                 <button
-                  className="rounded-[16px] border border-line bg-panel px-4 py-2 text-sm font-medium text-text transition hover:bg-panel-soft"
+                  className="ui-button ui-button--ghost"
                   onClick={() => togglePackageSelection(item.packageName)}
                   type="button"
                 >
@@ -206,24 +222,53 @@ export function CleanupSession() {
             you want in the cleanup review.
           </p>
         )}
+        </div>
+
+        <div className="grid gap-4">
+          <div className="info-card">
+            <div className="info-card__label">Execution state</div>
+            <div className="info-card__value">
+              {selectionRequired
+                ? "Blocked"
+                : device?.status !== "ready"
+                  ? "Waiting"
+                  : hasPackages
+                    ? "Ready"
+                    : "Idle"}
+            </div>
+            <div className="info-card__copy">
+              {cleanupBlocked
+                ? "One or more safety conditions are currently blocking execution."
+                : "The reviewed cleanup set is ready to run on the active device."}
+            </div>
+          </div>
+
+          <div className="info-card">
+            <div className="info-card__label">Technician checklist</div>
+            <div className="mt-3 grid gap-2 text-sm text-text-muted">
+              <div>Confirm the correct handset is selected.</div>
+              <div>Review launcher and protected-package warnings.</div>
+              <div>Use report history to document the outcome.</div>
+            </div>
+          </div>
+        </div>
       </section>
       {cleanupResults.length > 0 ? (
-        <section className="glass-panel rounded-[28px] p-6">
-          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+        <section className="workbench-panel">
+          <div className="panel-header">
             <div>
-              <h3 className="text-lg font-semibold text-text">
-                Cleanup results
-              </h3>
-              <p className="text-sm text-text-muted">
+              <p className="section-kicker">Result ledger</p>
+              <h3 className="panel-title mt-3">Cleanup results</h3>
+              <p className="panel-copy">
                 {successfulRemovals.length} succeeded, {failedRemovals.length}{" "}
                 failed.
               </p>
             </div>
           </div>
-          <div className="mt-4 grid gap-3">
+          <div className="package-list mt-4">
             {cleanupResults.map((result) => (
               <article
-                className={`rounded-[20px] border px-4 py-4 ${
+                className={`result-card ${
                   result.success
                     ? "border-success/30 bg-success/8"
                     : "border-danger/30 bg-danger/8"
@@ -270,7 +315,7 @@ export function CleanupSession() {
         title="Launcher risk review"
       />
       {launcherRiskSelected ? (
-        <div className="rounded-[18px] border border-warning/30 bg-warning/10 p-4 text-sm text-text-muted">
+        <div className="reason-card text-sm text-text-muted">
           <div className="flex items-start gap-2">
             <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
             <span>

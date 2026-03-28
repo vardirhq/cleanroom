@@ -4,22 +4,16 @@ type RiskBadgeProps = {
 
 function getRiskTone(score: number) {
   if (score >= 8) {
-    return "bg-danger/14 text-danger";
+    return "risk-badge--high";
   }
 
   if (score >= 5) {
-    return "bg-warning/14 text-warning";
+    return "risk-badge--medium";
   }
 
-  return "bg-info/14 text-info";
+  return "risk-badge--low";
 }
 
 export function RiskBadge({ score }: RiskBadgeProps) {
-  return (
-    <span
-      className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${getRiskTone(score)}`}
-    >
-      Risk {score}
-    </span>
-  );
+  return <span className={`risk-badge ${getRiskTone(score)}`}>Risk {score}</span>;
 }

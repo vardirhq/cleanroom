@@ -12,6 +12,7 @@ function makePackage(
     highImportanceNotificationCount: 0,
     iconDataUrl: null,
     launcherCandidate: false,
+    launcherRisk: false,
     metadataResolved: true,
     name: "Example",
     notificationSpamRisk: false,
@@ -44,6 +45,7 @@ describe("scan review helpers", () => {
       }),
       makePackage({
         launcherCandidate: true,
+        launcherRisk: true,
         name: "Simple Home",
         packageName: "com.launcher.home",
         reasons: ["Launcher package"],
@@ -74,6 +76,7 @@ describe("scan review helpers", () => {
       makePackage({ packageName: "com.cleaner.app" }),
       makePackage({
         launcherCandidate: true,
+        launcherRisk: true,
         packageName: "com.launcher.home",
       }),
       makePackage({ packageName: "com.safe.tool", protectedPackage: true }),

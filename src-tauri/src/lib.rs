@@ -1,6 +1,9 @@
+pub mod backend;
 mod commands;
-mod models;
-mod services;
+pub mod models;
+pub mod services;
+
+use tauri::Manager;
 
 use commands::app::export_cleanup_report_pdf;
 use commands::app::get_app_bootstrap;
@@ -11,6 +14,7 @@ use commands::app::open_launcher_recovery_settings;
 use commands::app::run_cleanup;
 use commands::app::set_active_device;
 use commands::app::update_app_settings;
+use services::adb::runner::set_bundled_resource_dir;
 use services::device_monitor;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -18,6 +22,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            set_bundled_resource_dir(app.path().resource_dir().ok());
             device_monitor::start(app.handle().clone());
             Ok(())
         })

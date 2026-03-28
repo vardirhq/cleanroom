@@ -8,11 +8,10 @@ type EmptyStateProps = {
 
 export function EmptyState({ action, description, title }: EmptyStateProps) {
   return (
-    <div className="glass-panel rounded-[24px] p-6 text-center">
-      <h3 className="text-lg font-semibold text-text">{title}</h3>
-      <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-text-muted">
-        {description}
-      </p>
+    <div className="empty-state">
+      <p className="section-kicker">Workstation state</p>
+      <h3 className="empty-state__title">{title}</h3>
+      <p className="empty-state__copy">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );

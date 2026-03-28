@@ -60,6 +60,7 @@ const emptySummary: ScanSummary = {
   notificationSuspectCount: 0,
   protectedCount: 0,
   scannedPackageCount: 0,
+  snapshotSource: "live",
   systemPackageCount: 0,
   userPackageCount: 0,
 };

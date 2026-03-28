@@ -1,6 +1,7 @@
 use std::{
     fs,
     path::{Path, PathBuf},
+    sync::{Mutex, OnceLock},
 };
 
 use apk_info::apk::Apk;
@@ -8,7 +9,10 @@ use base64::{engine::general_purpose::STANDARD, Engine as _};
 
 use crate::services::detection::scoring::apply_session_signals;
 use crate::{
-    models::package::{InstalledPackageRecord, PackageMetadataRecord, PackageScope, ScanSummary},
+    models::package::{
+        InstalledPackageRecord, PackageMetadataRecord, PackageScope, ScanSnapshotSource,
+        ScanSummary,
+    },
     services::{
         adb::{
             parser::{
@@ -26,6 +30,29 @@ pub struct PackageSnapshot {
     pub contaminants: Vec<crate::models::package::ContaminantRecord>,
     pub installed_packages: Vec<InstalledPackageRecord>,
     pub summary: ScanSummary,
+}
+
+#[derive(Clone)]
+struct CachedPackageSnapshot {
+    fingerprint: String,
+    serial: String,
+    snapshot: PackageSnapshot,
+}
+
+static SNAPSHOT_CACHE: OnceLock<Mutex<Option<CachedPackageSnapshot>>> = OnceLock::new();
+
+fn snapshot_cache() -> &'static Mutex<Option<CachedPackageSnapshot>> {
+    SNAPSHOT_CACHE.get_or_init(|| Mutex::new(None))
+}
+
+impl Clone for PackageSnapshot {
+    fn clone(&self) -> Self {
+        Self {
+            contaminants: self.contaminants.clone(),
+            installed_packages: self.installed_packages.clone(),
+            summary: self.summary.clone(),
+        }
+    }
 }
 
 pub fn load_snapshot(
@@ -53,9 +80,10 @@ pub fn load_snapshot(
         .resolve_home_package(serial)
         .ok()
         .and_then(|output| parse_resolved_package(&output));
-    let notification_counts = adb
-        .dump_notifications(serial)
-        .ok()
+    let home_package_raw = home_package.clone().unwrap_or_default();
+    let notification_dump = adb.dump_notifications(serial).ok();
+    let notification_counts = notification_dump
+        .as_deref()
         .map(|output| {
             let active = parse_active_notification_counts(&output)
                 .into_iter()
@@ -70,6 +98,26 @@ pub fn load_snapshot(
         })
         .unwrap_or_default();
     let rules = DetectionRules::load();
+    let fingerprint = format!(
+        "{}\n--users--\n{}\n--home--\n{}\n--notifications--\n{}",
+        all_package_output,
+        user_package_output,
+        home_package_raw,
+        notification_dump.as_deref().unwrap_or_default()
+    );
+
+    if !include_metadata {
+        if let Some(cached) = snapshot_cache()
+            .lock()
+            .ok()
+            .and_then(|cache| cache.clone())
+            .filter(|cached| cached.serial == serial && cached.fingerprint == fingerprint)
+        {
+            let mut snapshot = cached.snapshot;
+            snapshot.summary.snapshot_source = ScanSnapshotSource::SessionCache;
+            return snapshot;
+        }
+    }
 
     let user_packages = parse_package_list(&user_package_output)
         .into_iter()
@@ -158,7 +206,7 @@ pub fn load_snapshot(
         .count();
     let system_package_count = installed_packages.len().saturating_sub(user_package_count);
 
-    PackageSnapshot {
+    let snapshot = PackageSnapshot {
         summary: ScanSummary {
             active_notification_count,
             aggressive_channel_count,
@@ -168,12 +216,25 @@ pub fn load_snapshot(
             notification_suspect_count,
             protected_count,
             scanned_package_count: installed_packages.len(),
+            snapshot_source: ScanSnapshotSource::Live,
             system_package_count,
             user_package_count,
         },
         contaminants,
         installed_packages,
+    };
+
+    if !include_metadata {
+        if let Ok(mut cache) = snapshot_cache().lock() {
+            *cache = Some(CachedPackageSnapshot {
+                fingerprint,
+                serial: serial.to_string(),
+                snapshot: snapshot.clone(),
+            });
+        }
     }
+
+    snapshot
 }
 
 fn empty_snapshot() -> PackageSnapshot {
@@ -189,6 +250,7 @@ fn empty_snapshot() -> PackageSnapshot {
             notification_suspect_count: 0,
             protected_count: 0,
             scanned_package_count: 0,
+            snapshot_source: ScanSnapshotSource::Live,
             system_package_count: 0,
             user_package_count: 0,
         },

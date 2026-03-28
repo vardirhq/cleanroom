@@ -24,6 +24,7 @@ This checklist tracks the current planned work for Cleanroom. Update it when sco
 ## Repo and project setup
 
 - [x] Define repository conventions for formatting, linting, and testing
+- [x] Add release-discipline guidance so version-worthy changes must bump project version metadata
 - [ ] Add license and contribution docs if this will be shared beyond internal use
 - [ ] Create `docs/` for product, ADB, and detection-engine notes
 - [ ] Initialize a git repository if this repo is meant to track local history
@@ -34,7 +35,24 @@ This checklist tracks the current planned work for Cleanroom. Update it when sco
 - [x] Replace the placeholder bootstrap payload with real ADB-backed device bootstrap data
 - [x] Replace the centered max-width shell with a full-width desktop window layout
 - [x] Add a custom desktop titlebar and premium window chrome treatment
+- [x] Constrain scrolling to the main content pane so shell chrome stays fixed
+- [x] Redesign the full Electron-first shell, page layouts, and workstation workflow UI
 - [ ] Add startup/loading transitions and better failure recovery states
+
+## Electron migration
+
+- [x] Add a shared Rust backend module reusable from Tauri commands and a sidecar binary
+- [x] Add a Rust JSON-RPC sidecar over stdio for Electron integration
+- [x] Replace direct Tauri renderer calls with a runtime desktop adapter
+- [x] Add a parallel Electron main/preload shell scaffold
+- [x] Fix Electron ESM runtime path resolution for packaged and compiled main-process files
+- [x] Add Electron release scripts and staged sidecar/resource packaging inputs
+- [x] Fix Electron packaged Windows sidecar staging so the app ships the correct `cleanroom-sidecar.exe`
+- [x] Fix packaged Electron renderer asset paths so Windows builds do not open to a blank window
+- [x] Package Electron Windows sidecar runtime DLL dependencies and surface sidecar startup failures clearly
+- [x] Separate Electron packaging icons from the Tauri icon set and make Windows installer icons explicit
+- [ ] Validate packaged Electron artifacts on Linux and Windows
+- [ ] Resolve `electron-builder` Windows packaging failure against pnpm on the Linux build host
 
 ## Frontend architecture
 
@@ -51,6 +69,7 @@ This checklist tracks the current planned work for Cleanroom. Update it when sco
 - [x] Build `EmptyState` component
 - [x] Build `ConfirmationModal` component
 - [ ] Add reusable loading and error-state UI primitives
+- [x] Add reusable loading and error-state UI primitives
 - [x] Replace empty scan table with live installed-package inventory
 - [x] Add filters and grouping controls to scan results
 - [x] Add scope filtering so system/OEM packages stay hidden by default but remain reviewable
@@ -62,6 +81,10 @@ This checklist tracks the current planned work for Cleanroom. Update it when sco
 - [x] Define initial radius, border, and shadow system
 - [x] Shift the app shell toward a denser native desktop feel with a persistent app rail
 - [x] Add a premium dual-theme visual system for dark and light workstation use
+- [x] Replace the MVP panel/card language with a coherent desktop workstation component system
+- [x] Rebuild the titlebar, navigation rail, and workflow toolbars for a native Electron feel
+- [x] Redesign Dashboard, Scan Review, Cleanup, Reports, and Settings around technician tasks
+- [x] Remove the outer framed shell so the desktop UI sits flush to the actual window bounds
 - [x] Make launcher/default-app risk warnings visually explicit
 - [ ] Add keyboard/focus treatment for technician-heavy workflows
 - [ ] Ensure the UI works cleanly on smaller laptop screens with real data volume
@@ -84,8 +107,11 @@ This checklist tracks the current planned work for Cleanroom. Update it when sco
 ## ADB integration
 
 - [x] Implement ADB discovery strategy for system-installed `adb`
-- [ ] Implement bundled sidecar strategy for platform-specific `adb`
-- [ ] Add Tauri sidecar configuration and permissions
+- [x] Implement bundled platform-specific `adb` strategy
+- [x] Add Tauri resource bundling for packaged Platform-Tools
+- [x] Default ADB resolution to bundled binaries with system fallback for zero-setup bench use
+- [x] Hide spawned Windows `adb.exe` console windows and harden custom titlebar controls
+- [x] Add explicit Tauri window permissions for the custom titlebar controls
 - [ ] Implement command runner with timeout and retry behavior
 - [ ] Capture stdout/stderr and map failures into typed errors
 - [x] Support device enumeration via `adb devices`
@@ -119,6 +145,7 @@ This checklist tracks the current planned work for Cleanroom. Update it when sco
 - [x] Cache resolved package metadata across refreshes so repeated scans do not re-fetch every app
 - [x] Identify apps with launcher/home activities
 - [ ] Cache scan results locally for the active session
+- [x] Cache scan results locally for the active session
 - [ ] Evaluate whether install recency is reliable enough to include in MVP
 
 ## Detection engine
@@ -159,7 +186,8 @@ This checklist tracks the current planned work for Cleanroom. Update it when sco
 ## Launcher/default recovery
 
 - [ ] Detect suspicious launcher packages
-- [ ] Highlight likely fake home apps in scan results from real package data
+- [x] Detect suspicious launcher packages
+- [x] Highlight likely fake home apps in scan results from real package data
 - [x] Guide technicians to restore the default launcher
 - [x] Add quick-open helpers for relevant Android settings where feasible
 - [ ] Document vendor/device limitations around launcher recovery
@@ -203,8 +231,12 @@ This checklist tracks the current planned work for Cleanroom. Update it when sco
 - [ ] Set Linux as the first supported release target
 - [ ] Add GitHub Actions build workflow for Tauri bundles
 - [x] Validate Linux-to-Windows `x86_64-pc-windows-gnu` cross-build
-- [ ] Plan Windows packaging prerequisites and release workflow
-- [ ] Bundle platform-specific `adb` binaries if sidecar strategy is chosen
+- [x] Refresh platform icon assets from the current `logo.svg`
+- [x] Plan Windows packaging prerequisites and release workflow
+- [x] Bundle platform-specific `adb` binaries with packaged builds
+- [x] Add a simple Windows installer build script around the portable release
+- [x] Add Electron packaging and sidecar/resource bundling scaffolding for Linux and Windows
+- [ ] Finalize Electron Windows packaging dependencies so the packaged `.exe` carries the correct icon metadata
 - [ ] Decide updater strategy for future releases
 
 ## Documentation

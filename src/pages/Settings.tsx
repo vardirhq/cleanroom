@@ -39,181 +39,181 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1.45fr_1fr]">
-      <section className="glass-panel rounded-[28px] p-6">
-        <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
-          Workbench settings
-        </p>
-        <h3 className="mt-2 text-2xl font-semibold text-text">
-          Operational controls
-        </h3>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-text-muted">
-          Keep the support disk predictable: choose how Cleanroom resolves ADB,
-          where it writes reports, and whether developer diagnostics are visible
-          on this workstation.
-        </p>
-
-        <div className="mt-6">
-          <h4 className="text-base font-semibold text-text">Theme mode</h4>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {(["dark", "light", "system"] as const).map((option) => (
-              <button
-                className={`rounded-[22px] border px-4 py-4 text-left transition ${
-                  themeMode === option
-                    ? "border-primary bg-primary-strong/12 text-text"
-                    : "border-line bg-surface-soft text-text-muted hover:bg-panel-soft"
-                }`}
-                key={option}
-                onClick={() => setThemeMode(option)}
-                type="button"
-              >
-                <div className="text-sm font-semibold uppercase tracking-[0.16em]">
-                  {option}
-                </div>
-                <div className="mt-2 text-sm leading-6">
-                  {option === "dark"
-                    ? "Optimized for focused bench work and lower visual glare."
-                    : option === "light"
-                      ? "Brighter desk-software presentation for shared support environments."
-                      : "Follow the workstation preference automatically."}
-                </div>
-              </button>
-            ))}
+    <div className="workbench-page">
+      <section className="page-hero">
+        <div className="page-hero__header">
+          <div className="max-w-4xl">
+            <p className="panel-kicker">Workbench settings</p>
+            <h2 className="page-hero__title">Operational controls</h2>
+            <p className="page-hero__description">
+              Keep the support disk predictable: choose how Cleanroom resolves
+              ADB, where it writes reports, and whether diagnostics are visible
+              on this workstation.
+            </p>
+          </div>
+          <div className="page-hero__actions">
+            <button
+              className="ui-button"
+              disabled={isSaving}
+              onClick={() => void persistOperationalSettings()}
+              type="button"
+            >
+              <Save className="h-4 w-4" />
+              {isSaving ? "Saving" : "Save settings"}
+            </button>
           </div>
         </div>
+      </section>
 
-        <div className="mt-6">
-          <h4 className="text-base font-semibold text-text">ADB strategy</h4>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {(["system", "bundled"] as const).map((option) => (
-              <button
-                className={`rounded-[22px] border px-4 py-4 text-left transition ${
-                  adbStrategy === option
-                    ? "border-primary bg-primary-strong/12 text-text"
-                    : "border-line bg-surface-soft text-text-muted hover:bg-panel-soft"
-                }`}
-                key={option}
-                onClick={() => setAdbStrategy(option)}
-                type="button"
-              >
-                <div className="text-sm font-semibold uppercase tracking-[0.18em]">
-                  {option}
-                </div>
-                <div className="mt-2 text-sm leading-6">
-                  {option === "system"
-                    ? "Use the workstation Platform-Tools installation. This is the current effective path."
-                    : "Persist a preference for packaged sidecars once bundled ADB is enabled."}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <div className="flex items-center gap-2">
-            <FolderCog className="h-4 w-4 text-info" />
-            <h4 className="text-base font-semibold text-text">
-              Export directory
-            </h4>
-          </div>
-          <p className="mt-2 text-sm leading-6 text-text-muted">
-            Reports, text exports, and PDFs are written here. Leave blank to use
-            the default Cleanroom reports folder.
+      <div className="settings-layout">
+        <section className="workbench-panel">
+          <p className="panel-copy mt-0">
+            Keep the support disk predictable: choose how Cleanroom resolves
+            ADB, where it writes reports, and whether developer diagnostics are
+            visible on this workstation. Bundled ADB is the default zero-setup
+            path.
           </p>
-          <input
-            className="mt-4 w-full rounded-[16px] border border-line bg-surface-soft px-4 py-3 text-sm text-text outline-none transition focus:border-primary"
-            onChange={(event) => setExportDirectory(event.target.value)}
-            placeholder="Default reports directory"
-            type="text"
-            value={exportDirectory}
-          />
-          <div className="mt-3 rounded-[16px] border border-line bg-surface-soft px-4 py-3 text-sm text-text-muted">
-            Effective directory:{" "}
-            <span className="text-text">
-              {effectiveExportDirectory ?? "Loading..."}
-            </span>
-          </div>
-        </div>
 
-        <div className="mt-6 rounded-[22px] border border-line bg-surface-soft p-5">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <Wrench className="h-4 w-4 text-warning" />
-                <h4 className="text-base font-semibold text-text">
-                  Developer diagnostics
-                </h4>
-              </div>
-              <p className="mt-2 text-sm leading-6 text-text-muted">
-                Show low-level support data such as selected serial, rules
-                version, and ADB diagnostics in this page.
-              </p>
-            </div>
-            <label className="inline-flex items-center gap-3 text-sm text-text">
-              <input
-                checked={developerMode}
-                className="h-4 w-4 accent-sky-500"
-                onChange={(event) => setDeveloperMode(event.target.checked)}
-                type="checkbox"
-              />
-              Enabled
-            </label>
-          </div>
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button
-            className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-line bg-panel px-4 py-2.5 text-sm font-medium text-text transition hover:bg-panel-soft disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isSaving}
-            onClick={() => void persistOperationalSettings()}
-            type="button"
-          >
-            <Save className="h-4 w-4" />
-            {isSaving ? "Saving" : "Save operational settings"}
-          </button>
-          {saveMessage ? (
-            <span className="text-sm text-text-muted">{saveMessage}</span>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="glass-panel rounded-[28px] p-6">
-        <h3 className="text-lg font-semibold text-text">Workbench status</h3>
-        <div className="mt-4 grid gap-3">
-          <div className="rounded-[18px] border border-line bg-surface-soft p-4 text-sm text-text-muted">
-            Rules database version
-            <div className="mt-2 text-lg font-semibold text-text">
-              {bootstrap?.app.rulesVersion ?? "Unknown"}
+          <div className="mt-6">
+            <h4 className="panel-title">Theme mode</h4>
+            <div className="device-grid mt-4 md:grid-cols-3">
+              {(["dark", "light", "system"] as const).map((option) => (
+                <button
+                  className={`device-select-card ${
+                    themeMode === option ? "device-select-card--active" : ""
+                  }`}
+                  key={option}
+                  onClick={() => setThemeMode(option)}
+                  type="button"
+                >
+                  <div className="info-card__label text-left">{option}</div>
+                  <div className="mt-2 text-sm leading-6 text-text-muted">
+                    {option === "dark"
+                      ? "Optimized for focused bench work and lower visual glare."
+                      : option === "light"
+                        ? "Brighter desk-software presentation for shared support environments."
+                        : "Follow the workstation preference automatically."}
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
-          <div className="rounded-[18px] border border-line bg-surface-soft p-4 text-sm text-text-muted">
-            Active ADB path
-            <div className="mt-2 break-all text-sm text-text">
-              {bootstrap?.app.adbPath ?? "ADB not detected"}
+
+          <div className="mt-6">
+            <h4 className="panel-title">ADB strategy</h4>
+            <div className="device-grid mt-4">
+              {(["system", "bundled"] as const).map((option) => (
+                <button
+                  className={`device-select-card ${
+                    adbStrategy === option ? "device-select-card--active" : ""
+                  }`}
+                  key={option}
+                  onClick={() => setAdbStrategy(option)}
+                  type="button"
+                >
+                  <div className="info-card__label text-left">{option}</div>
+                  <div className="mt-2 text-sm leading-6 text-text-muted">
+                    {option === "system"
+                      ? "Use the workstation Platform-Tools installation as an explicit override for advanced diagnostics."
+                      : "Use the ADB binary packaged with Cleanroom. This is the default and recommended zero-setup path."}
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
-          {developerMode ? (
-            <div className="rounded-[18px] border border-warning/30 bg-warning/8 p-4 text-sm text-text-muted">
-              <div className="flex items-center gap-2 text-text">
-                <ShieldAlert className="h-4 w-4 text-warning" />
-                Developer diagnostics
-              </div>
-              <div className="mt-3 grid gap-2">
-                <div>
-                  Selected device serial: {activeDeviceSerial ?? "None"}
+
+          <div className="mt-6">
+            <div className="flex items-center gap-2">
+              <FolderCog className="h-4 w-4 text-info" />
+              <h4 className="panel-title">Export directory</h4>
+            </div>
+            <p className="panel-copy">
+              Reports, text exports, and PDFs are written here. Leave blank to
+              use the default Cleanroom reports folder.
+            </p>
+            <input
+              className="ui-input mt-4 px-4"
+              onChange={(event) => setExportDirectory(event.target.value)}
+              placeholder="Default reports directory"
+              type="text"
+              value={exportDirectory}
+            />
+            <div className="info-card mt-3">
+              Effective directory:{" "}
+              <span className="text-text">
+                {effectiveExportDirectory ?? "Loading..."}
+              </span>
+            </div>
+          </div>
+
+          <div className="info-card mt-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Wrench className="h-4 w-4 text-warning" />
+                  <h4 className="panel-title">Developer diagnostics</h4>
                 </div>
-                <div>Connected devices: {bootstrap?.app.deviceCount ?? 0}</div>
-                <div>Platform: {bootstrap?.app.platform ?? "Unknown"}</div>
-                <div>ADB mode preference: {adbStrategy}</div>
+                <p className="panel-copy">
+                  Show low-level support data such as selected serial, rules
+                  version, and ADB diagnostics in this page.
+                </p>
+              </div>
+              <label className="inline-flex items-center gap-3 text-sm text-text">
+                <input
+                  checked={developerMode}
+                  className="h-4 w-4 accent-sky-500"
+                  onChange={(event) => setDeveloperMode(event.target.checked)}
+                  type="checkbox"
+                />
+                Enabled
+              </label>
+            </div>
+          </div>
+
+          <div className="inline-actions mt-6">
+            {saveMessage ? (
+              <span className="text-sm text-text-muted">{saveMessage}</span>
+            ) : null}
+          </div>
+        </section>
+
+        <section className="workbench-panel">
+          <p className="section-kicker">Workbench status</p>
+          <h3 className="panel-title mt-3">Runtime and diagnostics</h3>
+          <div className="package-list mt-4">
+            <div className="settings-card text-sm text-text-muted">
+              <div className="info-card__label">Rules database version</div>
+              <div className="mt-2 text-lg font-semibold text-text">
+                {bootstrap?.app.rulesVersion ?? "Unknown"}
               </div>
             </div>
-          ) : (
-            <div className="rounded-[18px] border border-line bg-surface-soft p-4 text-sm text-text-muted">
-              Developer diagnostics are hidden on this workstation.
+            <div className="settings-card text-sm text-text-muted">
+              <div className="info-card__label">Active ADB path</div>
+              <div className="mt-2 break-all text-sm text-text">
+                {bootstrap?.app.adbPath ?? "ADB not detected"}
+              </div>
             </div>
-          )}
-        </div>
-      </section>
+            {developerMode ? (
+              <div className="settings-card border-warning/30 bg-warning/8 text-sm text-text-muted">
+                <div className="flex items-center gap-2 text-text">
+                  <ShieldAlert className="h-4 w-4 text-warning" />
+                  Developer diagnostics
+                </div>
+                <div className="mt-3 grid gap-2">
+                  <div>Selected device serial: {activeDeviceSerial ?? "None"}</div>
+                  <div>Connected devices: {bootstrap?.app.deviceCount ?? 0}</div>
+                  <div>Platform: {bootstrap?.app.platform ?? "Unknown"}</div>
+                  <div>ADB mode: {adbStrategy}</div>
+                </div>
+              </div>
+            ) : (
+              <div className="settings-card text-sm text-text-muted">
+                Developer diagnostics are hidden on this workstation.
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
