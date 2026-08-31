@@ -1,6 +1,7 @@
 package no.vardir.cleanroom.spike;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Base64;
 import android.sun.security.x509.AlgorithmId;
@@ -46,7 +47,7 @@ public final class AdbConnectionManager extends AbsAdbConnectionManager {
     public AdbConnectionManager(Context context) throws Exception {
         setApi(Build.VERSION.SDK_INT);
 
-        var prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String storedKey = prefs.getString(PRIVATE_KEY, null);
         String storedCertificate = prefs.getString(CERTIFICATE, null);
 
@@ -75,7 +76,7 @@ public final class AdbConnectionManager extends AbsAdbConnectionManager {
     private static Certificate createCertificate(PublicKey publicKey, PrivateKey privateKey) throws Exception {
         String algorithm = "SHA512withRSA";
         Date notBefore = new Date(System.currentTimeMillis() - 60_000L);
-        Date notAfter = new Date(System.currentTimeMillis() + 3650L * 24 * 60 * 60 * 1000);
+        Date notAfter = new Date(System.currentTimeMillis() + 3650L * 24L * 60L * 60L * 1000L);
 
         CertificateExtensions extensions = new CertificateExtensions();
         extensions.set("SubjectKeyIdentifier", new SubjectKeyIdentifierExtension(
