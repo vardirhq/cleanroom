@@ -24,7 +24,7 @@ Open `android-spike/` as an Android Studio project, or run with Gradle 9.5+ and 
 gradle :app:assembleDebug
 ```
 
-The app targets API 37 and requires Android 11 (API 30) or newer.
+The app targets API 36 and requires Android 11 (API 30) or newer.
 
 ## Manual device test
 
