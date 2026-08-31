@@ -1,5 +1,6 @@
 import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import path from "node:path";
+import process from "node:process";
 
 const root = process.cwd();
 const stageRoot = path.join(root, "electron-resources");
