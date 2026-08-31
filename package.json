@@ -34,13 +34,19 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/plugin-opener": "^2.5.3",
+    "lucide-react": "^0.577.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.1",
+    "zustand": "^5.0.12"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.2.1",
-    "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/cli": "^2.10.1",
-    "@tauri-apps/plugin-opener": "^2.5.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^24.5.2",
@@ -56,18 +62,13 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
     "jsdom": "^29.0.0",
-    "lucide-react": "^0.577.0",
     "prettier": "^3.8.1",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.1",
     "tailwindcss": "^4.2.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.57.1",
     "vite": "^7.3.1",
     "vitest": "^4.1.0",
-    "wait-on": "^8.0.5",
-    "zustand": "^5.0.12"
+    "wait-on": "^8.0.5"
   },
   "build": {
     "appId": "dev.madsens.cleanroom",
