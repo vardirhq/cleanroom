@@ -151,7 +151,7 @@ function registerIpc() {
           ? error.message
           : "Unknown sidecar invocation failure";
       writeDiagnosticLog(`IPC invoke failed for ${String(method)}: ${message}`);
-      throw new Error(message, { cause: error });
+      throw new Error(message);
     }
   });
 
