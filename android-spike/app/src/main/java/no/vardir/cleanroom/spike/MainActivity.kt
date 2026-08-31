@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -55,6 +56,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun SpikeScreen(openDeveloperSettings: () -> Unit) {
+    val context = LocalContext.current.applicationContext
     val scope = rememberCoroutineScope()
     var pairingPort by remember { mutableStateOf("") }
     var pairingCode by remember { mutableStateOf("") }
@@ -109,7 +111,7 @@ private fun SpikeScreen(openDeveloperSettings: () -> Unit) {
                         results = emptyList()
                         status = runCatching {
                             withContext(Dispatchers.IO) {
-                                val probe = LocalAdbProbe(this@SpikeScreenContext)
+                                val probe = LocalAdbProbe(context)
                                 val paired = probe.pair(pairingPort.toInt(), pairingCode)
                                 if (!paired) error("Pairing returned false")
                                 val connected = probe.connect()
@@ -130,7 +132,7 @@ private fun SpikeScreen(openDeveloperSettings: () -> Unit) {
                         status = "Connecting…"
                         status = runCatching {
                             withContext(Dispatchers.IO) {
-                                val probe = LocalAdbProbe(this@SpikeScreenContext)
+                                val probe = LocalAdbProbe(context)
                                 if (!probe.connect() && !probe.isConnected()) error("No paired ADB service discovered")
                             }
                             "Connected using saved identity"
@@ -151,7 +153,7 @@ private fun SpikeScreen(openDeveloperSettings: () -> Unit) {
                     status = "Running Cleanroom probes…"
                     val outcome = runCatching {
                         withContext(Dispatchers.IO) {
-                            val probe = LocalAdbProbe(this@SpikeScreenContext)
+                            val probe = LocalAdbProbe(context)
                             if (!probe.isConnected() && !probe.connect() && !probe.isConnected()) {
                                 error("ADB is not connected")
                             }
@@ -169,9 +171,7 @@ private fun SpikeScreen(openDeveloperSettings: () -> Unit) {
             Text("Run Cleanroom probes")
         }
 
-        results.forEach { result ->
-            ProbeCard(result)
-        }
+        results.forEach { result -> ProbeCard(result) }
 
         Spacer(Modifier.height(20.dp))
         Text(
@@ -190,6 +190,3 @@ private fun ProbeCard(result: ProbeResult) {
         }
     }
 }
-
-private val Any.SpikeScreenContext
-    get() = this
